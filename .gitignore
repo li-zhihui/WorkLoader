@@ -1,0 +1,7 @@
+.classpath
+.project
+target
+.idea
+.settings
+SparkLogAnalyzer.iml
+*.log

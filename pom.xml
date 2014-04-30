@@ -14,6 +14,11 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+<dependency>
+<artifactId>jfreechart</artifactId>
+<groupId>org.jfree</groupId>
+<version>1.0.17</version>
+   </dependency>
   </dependencies>
   <build>
     <finalName>workload.spark</finalName>

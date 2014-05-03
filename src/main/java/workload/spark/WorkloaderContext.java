@@ -6,7 +6,7 @@ import java.util.Properties;
  * context.
  * 
  */
-public class WorkloaderEnv {
+public class WorkloaderContext {
 	private static ThreadLocal<Properties> threadLocal = new ThreadLocal<Properties>();
 
 	public static void set(Properties properties) {
@@ -15,5 +15,9 @@ public class WorkloaderEnv {
 
 	public static String get(String key) {
 		return threadLocal.get().getProperty(key);
+	}
+
+	public static void clean() {
+		threadLocal.remove();
 	}
 }

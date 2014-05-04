@@ -6,15 +6,15 @@ package workload.spark.data.cleaner;
  * 
  */
 public class DstatCleaner extends Cleaner {
+	Cleaner cleaner;
 
 	public DstatCleaner(Cleaner cleaner) {
-		cleaner.clean();
+		this.cleaner = cleaner;
 	}
 
 	@Override
-	public void clean() {
-		// TODO Auto-generated method stub
-
+	public void clean() throws Exception {
+		this.cleaner.clean();
 	}
 
 }

@@ -5,5 +5,5 @@ package workload.spark.data.cleaner;
  * 
  */
 public abstract class Cleaner {
-	public abstract void clean();
+	public abstract void clean() throws Exception;
 }

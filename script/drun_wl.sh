@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#FIXME read it from SPARK_HOME/conf/slave
 TARGET=("sr453" "sr454" "sr462" "sr463")
 
 for worker in ${TARGET[@]}

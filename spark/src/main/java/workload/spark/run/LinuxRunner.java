@@ -28,7 +28,7 @@ public class LinuxRunner extends Runner {
 				+ WorkloadConf.get(Constants.WORKLOAD_NAME) + "."
 				+ Constants.WORKLOAD_RUN_SUFFIX;
 		System.out.println(workloadConfRun);
-		String logFile = WorkloadConf.get(Constants.WORKLOAD_WORKDIR)+"log.log";
+		String logFile = WorkloadConf.get(Constants.WORKLOAD_NAME)+Constants.DRIVER_LOG_SUFFIX;
 		String runsh = workloadPath + "drun_wl.sh "
 				+ WorkloadConf.get(workloadConfRun)+" "+logFile;
 		String[] runCmd = { "/bin/sh", "-c", runsh };

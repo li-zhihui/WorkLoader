@@ -22,4 +22,8 @@ public class Constants {
 	public static final String WORKLOAD_CONF_PREFIX = "workload";
 	public static final String WORKLOAD_PATH_SUFFIX = "path";
 	public static final String WORKLOAD_RUN_SUFFIX = "run";
+
+	/**************** Runtime *****************/
+	public static final String DRIVER_LOG_SUFFIX = "log.log";
+	public static final String DRIVER_CSV_PAHT = "/tmp";
 }

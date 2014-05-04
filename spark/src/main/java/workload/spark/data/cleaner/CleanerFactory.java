@@ -8,6 +8,6 @@ public class CleanerFactory {
 		if (WorkloadConf.get(Constants.WORKLOAD_STEP_CLEANER).equals("false")) {
 			return new EmptyCleaner();
 		}
-		return new DstatCleaner(new EmptyCleaner());
+		return new DstatCleaner(new DriverLogCleaner(new EmptyCleaner()));
 	}
 }

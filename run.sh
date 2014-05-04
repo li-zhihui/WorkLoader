@@ -1,3 +1,8 @@
 #!/bin/bash
-
-java -cp target/SparkLogAnalyzer-1.0.jar com.intel.spark.log.Main $1
+conf=`pwd`/conf.properties
+classpath=$conf
+for file in web/target/web-1.0-SNAPSHOT/WEB-INF/lib/*.jar
+do
+classpath="$classpath":"`pwd`"/"$file"
+done
+java -cp $classpath workload.spark.ui.Cli $conf $1

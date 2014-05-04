@@ -5,5 +5,5 @@ package workload.spark.run;
  * 
  */
 public abstract class Runner {
-	public abstract void run();
+	public abstract void run() throws Exception;
 }

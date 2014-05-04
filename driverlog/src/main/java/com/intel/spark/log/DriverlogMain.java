@@ -9,7 +9,7 @@ import com.intel.spark.log.util.MemPrinter;
 import com.intel.spark.log.util.NodePrinter;
 import com.intel.spark.log.util.TimeAdjuster;
 
-public class Main {
+public class DriverlogMain {
 	public static void main(String[] args) throws Exception {
 		if (args.length < 1) {
 			System.err.println("Please input Spark Driver's log file path.");
@@ -21,7 +21,7 @@ public class Main {
 				.println("Complete analysis, please check output file(/tmp/job.csv, stage.csv, task.csv)");
 	}
 
-	private static void processFile(String fileStr) throws Exception {
+	public static void processFile(String fileStr) throws Exception {
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(fileStr));

@@ -7,10 +7,10 @@
 </parent>
         <modelVersion>4.0.0</modelVersion>
         <groupId>com.intel.bigdata</groupId>
-        <artifactId>driverlog</artifactId>
+        <artifactId>workload.driverlog</artifactId>
         <packaging>jar</packaging>
         <version>1.0-SNAPSHOT</version>
-        <name>driverlog</name>
+        <name>workload.driverlog</name>
   <url>http://maven.apache.org</url>
 
   <properties>

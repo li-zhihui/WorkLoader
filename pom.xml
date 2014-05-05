@@ -8,9 +8,9 @@
 	<name>workload</name>
 	<url>http://maven.apache.org</url>
 	<modules>
-<module>driverlog</module>	
-	<module>spark</module>
-<module>web</module>
+	<module>workload.driverlog</module>	
+	<module>workload.spark</module>
+	<module>workload.web</module>
 	</modules>
 	<dependencies>
 		<dependency>

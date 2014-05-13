@@ -119,11 +119,9 @@ public class JFreeSparkChart extends SparkChart {
 			// exception
 			st1 = new StringTokenizer(st.nextToken(), ".");
 			end = Double.parseDouble(st1.nextToken().trim());
-			if (name.compareTo(Constants.STAGE_NAME) == 0
-					|| name.compareTo(Constants.STAGE_NAME) == 0) {
-				start = start / 1000;
-				end = end / 1000;
-			}
+
+			start = start / 1000;
+			end = end / 1000;
 
 			if (count == 0)
 				offset = start;

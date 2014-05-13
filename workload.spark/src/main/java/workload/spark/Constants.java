@@ -1,18 +1,20 @@
 package workload.spark;
 
 public class Constants {
-	public static final String DSTAT_FILE = "sr479_dstat.csv";
-	public static final String JOB_NAME = "JOB";
-	public static final String STAGE_NAME = "STAGE";
-	public static final String TASK_NAME = "TASK";
+	public static final String DSTAT_FILE = "_dstat.csv";
+	public static final String JOB_NAME = "job";
+	public static final String STAGE_NAME = "stage";
+	public static final String TASK_NAME = "task";
 	public static final String CSV_SUFFIX = ".csv";
 	public static final String GRAPH_SUFFIX = ".jpg";
 	public static final String DATA_SPLIT = ",";
 
 	/************* WorkloadEnv *************/
+	public static final String SPARK_HOME = "spark.home";
 	public static final String WORKLOAD_NAME = "workload.name";
 	public static final String WORKLOAD_WORKDIR = "workload.workdir";
 	public static final String WORKLOAD_STEP_RUNNER = "workload.step.runner";
+	public static final String WORKLOAD_STEP_PARSER = "workload.step.parser";
 	public static final String WORKLOAD_STEP_LOADER = "workload.step.loader";
 	public static final String WORKLOAD_STEP_CLEANER = "workload.step.cleaner";
 	public static final String WORKLOAD_STEP_CHART = "workload.step.chart";
@@ -26,4 +28,5 @@ public class Constants {
 	/**************** Runtime *****************/
 	public static final String DRIVER_LOG_SUFFIX = "log.log";
 	public static final String DRIVER_CSV_PAHT = "/tmp";
+	public static final String WORKLOAD_LOG = "workload.log";
 }

@@ -9,9 +9,11 @@ import java.util.Properties;
 import workload.spark.Constants;
 import workload.spark.WorkloadConf;
 import workload.spark.backup.Backup;
+import workload.spark.backup.Init;
 import workload.spark.chart.ChartFactory;
 import workload.spark.data.LoaderFactory;
 import workload.spark.data.cleaner.CleanerFactory;
+import workload.spark.data.parser.LogParserFactory;
 import workload.spark.run.RunnerFactory;
 import workload.spark.ui.report.ReportFactory;
 
@@ -26,7 +28,9 @@ public class Executor {
 		p.put(Constants.WORKLOAD_NAME, args[1]);
 		p.put(Constants.WORKLOAD_WORKDIR, args[2]);
 		WorkloadConf.set(p);
+		Init.init();
 		RunnerFactory.getRunner().run();
+		LogParserFactory.getLogParser().parse();
 		LoaderFactory.getLoader().loadData();
 		CleanerFactory.getCleaner().clean();
 		ChartFactory.getChart().createChart();

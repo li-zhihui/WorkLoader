@@ -34,7 +34,7 @@ public class DriverLogCleaner extends Cleaner {
 					+ WorkloadConf.get(Constants.WORKLOAD_OUTPUT_PATH);
 			String[] cpCmd = { "/bin/sh", "-c", cp };
 			if (runtime.exec(cpCmd).waitFor() != 0) {
-				throw new Exception("copy " + csvFile + ".csv file failed:");
+				System.out.println("copy " + csvFile + ".csv file failed:");
 			}
 		}
 	}

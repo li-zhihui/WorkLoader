@@ -1,7 +1,5 @@
 package workload.spark.chart;
 
-import java.io.IOException;
-
 import workload.spark.BaseTestCase;
 
 public class JFreeChartTest extends BaseTestCase {
@@ -13,7 +11,7 @@ public class JFreeChartTest extends BaseTestCase {
 			chart.setCsvFolder(testDataFolder);
 			chart.setJpgFolder(testDataFolder);
 			chart.createChart();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			super.assertTrue(false);
 		}

@@ -5,8 +5,8 @@ TARGET=("sr453" "sr454" "sr462" "sr463")
 
 for worker in ${TARGET[@]}
 do
-ssh $worker rm -rf ~/${worker}_stat.csv
-ssh $worker dstat --mem --io --cpu --net --disk --time --output ${worker}_stat.csv 1 > stat &
+ssh $worker rm -rf ~/${worker}_dstat.csv
+ssh $worker dstat --mem --io --cpu --net -N eth0,eth1,total --disk --time --output ${worker}_dstat.csv 1 > stat &
 done
 
 ./$1 > $2 2>&1
@@ -18,5 +18,5 @@ done
 
 for worker in ${TARGET[@]}
 do
-scp $worker:~/${worker}_stat.csv ./
+scp $worker:~/${worker}_dstat.csv ./
 done

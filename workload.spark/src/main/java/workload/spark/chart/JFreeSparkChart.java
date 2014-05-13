@@ -3,11 +3,12 @@ package workload.spark.chart;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.jfree.chart.ChartFactory;
@@ -32,6 +33,7 @@ import org.jfree.ui.Layer;
 import org.jfree.ui.TextAnchor;
 
 import workload.spark.Constants;
+import workload.spark.Util;
 
 //FIXME please extract all local String val into Constants.
 public class JFreeSparkChart extends SparkChart {
@@ -40,7 +42,8 @@ public class JFreeSparkChart extends SparkChart {
 	private static final int count = 7;
 	private static int row = 2000;
 	private final static int col = 20;
-	private static int linenum = 0;// num of data instances
+	private int linenum = 0;// num of data instances
+	private String currentSlave;
 	double[][] data = new double[row][col];
 	ArrayList<String> list = new ArrayList<String>();// store item name
 	double offset = 0.0;
@@ -53,7 +56,8 @@ public class JFreeSparkChart extends SparkChart {
 	 * @throws IOException
 	 */
 	public void readCSV() throws IOException {
-		FileReader fr = new FileReader(csvFolder + Constants.DSTAT_FILE);
+		FileReader fr = new FileReader(csvFolder + currentSlave
+				+ Constants.DSTAT_FILE);
 		BufferedReader br = new BufferedReader(fr);
 		String line;
 		StringTokenizer st;
@@ -283,8 +287,8 @@ public class JFreeSparkChart extends SparkChart {
 		plot.setDomainGridlinesVisible(false);
 		int width = 800;
 		int height = 350;
-		ChartUtilities.saveChartAsPNG(new File(jpgFolder + name
-				+ Constants.GRAPH_SUFFIX), chart, width, height);
+		ChartUtilities.saveChartAsPNG(new File(jpgFolder + currentSlave + "_"
+				+ name + Constants.GRAPH_SUFFIX), chart, width, height);
 	}
 
 	/**
@@ -326,12 +330,16 @@ public class JFreeSparkChart extends SparkChart {
 	}
 
 	@Override
-	public void createChart() throws IOException {
-		readCSV();
-		createChart(0, 4, true, "MEMORY");
-		createChart(6, 6, true, "CPU");
-		createChart(14, 2, false, "NETWORK ETH1");
-		createChart(18, 2, false, "DISK");
+	public void createChart() throws Exception {
+		List<String> slaves = Util.getSlavesHost();
+		for (String slave : slaves) {
+			currentSlave = slave;
+			readCSV();
+			createChart(0, 4, true, "MEMORY");
+			createChart(6, 6, true, "CPU");
+			createChart(14, 2, false, "NETWORK");
+			createChart(18, 2, false, "DISK");
+		}
 		createCatogoryChart(Constants.JOB_NAME);
 		createCatogoryChart(Constants.STAGE_NAME);
 		createCatogoryChart(Constants.TASK_NAME);

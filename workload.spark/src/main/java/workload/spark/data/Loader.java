@@ -5,5 +5,5 @@ package workload.spark.data;
  * 
  */
 public abstract class Loader {
-	public abstract void loadData();
+	public abstract void loadData() throws Exception;
 }

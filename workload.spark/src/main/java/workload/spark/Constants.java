@@ -29,4 +29,7 @@ public class Constants {
 	public static final String DRIVER_LOG_SUFFIX = "log.log";
 	public static final String DRIVER_CSV_PAHT = "/tmp";
 	public static final String WORKLOAD_LOG = "workload.log";
+	
+	/**************** other conf********************/
+	public static final String DSTAT_SAMPLE_FREQ = "dstat.sample.freq";
 }

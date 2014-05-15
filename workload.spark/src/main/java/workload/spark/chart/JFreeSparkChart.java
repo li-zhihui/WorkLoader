@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -26,6 +27,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.DefaultTableXYDataset;
 import org.jfree.data.xy.XYSeries;
@@ -34,6 +36,7 @@ import org.jfree.ui.TextAnchor;
 
 import workload.spark.Constants;
 import workload.spark.Util;
+import workload.spark.WorkloadConf;
 
 //FIXME please extract all local String val into Constants.
 public class JFreeSparkChart extends SparkChart {
@@ -47,6 +50,8 @@ public class JFreeSparkChart extends SparkChart {
 	double[][] data = new double[row][col];
 	ArrayList<String> list = new ArrayList<String>();// store item name
 	double offset = 0.0;
+	private final int dstat_sample = Integer.valueOf(WorkloadConf.get(Constants.DSTAT_SAMPLE_FREQ));
+
 
 	/***
 	 * 
@@ -84,12 +89,31 @@ public class JFreeSparkChart extends SparkChart {
 				data[i][k] = Double.parseDouble(st.nextToken());
 			}
 			i++;
+			String timestamp = st.nextToken();
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-dd-MM HH:mm:ss");
+			try {
+				Long sampleTime = format.parse("2014-" + timestamp).getTime();
+				if (sampleTime < offset) {
+					i--;
+				}
+			} catch (Exception e) {
+
+			}
 		}
 		linenum = i;
 		br.close();
 	}
 
-	public void createCatogoryChart(String name) throws IOException {
+	public void createCatogoryChart(String name) throws IOException, Exception {
+		if (name.compareTo(Constants.TASK_NAME) == 0) {
+			String taskSort = "sort -t \",\" -g -k 5 " + 
+					csvFolder + name + Constants.CSV_SUFFIX + 
+					" > " + csvFolder + "tasktmp" + Constants.CSV_SUFFIX;
+			Util.runCmd(taskSort);
+			String taskCp = "/bin/cp " + csvFolder + "tasktmp" + Constants.CSV_SUFFIX
+					+ " " + csvFolder + name + Constants.CSV_SUFFIX;
+			Util.runCmd(taskCp);
+		}
 		FileReader fr = new FileReader(csvFolder + name + Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
 		String line;
@@ -120,11 +144,6 @@ public class JFreeSparkChart extends SparkChart {
 			st1 = new StringTokenizer(st.nextToken(), ".");
 			end = Double.parseDouble(st1.nextToken().trim());
 
-			start = start / 1000;
-			end = end / 1000;
-
-			if (count == 0)
-				offset = start;
 			tempData[0][count] = start - offset;
 			tempData[1][count] = end - start;
 			tempData[2][count] = end - offset;
@@ -141,7 +160,7 @@ public class JFreeSparkChart extends SparkChart {
 		double[][] newData = new double[3][count];
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < count; j++) {
-				newData[i][j] = tempData[i][j];
+				newData[i][j] = tempData[i][j] / 1000;
 			}
 		}
 		br.close();
@@ -160,6 +179,7 @@ public class JFreeSparkChart extends SparkChart {
 		final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		final StackedBarRenderer renderer = (StackedBarRenderer) plot
 				.getRenderer();
+		renderer.setDrawBarOutline(false);
 		renderer.setSeriesPaint(0, Color.white);
 		renderer.setSeriesPaint(2, Color.white);
 		plot.setBackgroundPaint(Color.white);
@@ -169,7 +189,7 @@ public class JFreeSparkChart extends SparkChart {
 		// insert gridline
 		NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setLowerBound(0);
-		rangeAxis.setUpperBound(linenum * 2);
+		rangeAxis.setUpperBound(linenum * dstat_sample);
 		double[] marker = findTimeEnd(Constants.JOB_NAME);
 		for (int i = 0; i < marker.length; i++) {
 			Marker m = new ValueMarker(marker[i], Color.gray,
@@ -181,7 +201,7 @@ public class JFreeSparkChart extends SparkChart {
 				BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f,
 				new float[] { 5.0f, 5.0f }, 0.0f);
 		for (int i = 0; i < marker1.length; i++) {
-			Marker m = new ValueMarker(marker1[i] / 1000, Color.gray,
+			Marker m = new ValueMarker(marker1[i], Color.gray,
 					dashedStroke, null, null, 0.5f);
 			plot.addRangeMarker(m, Layer.FOREGROUND);
 		}
@@ -193,6 +213,7 @@ public class JFreeSparkChart extends SparkChart {
 		int height = 350;
 		ChartUtilities.saveChartAsPNG(new File(jpgFolder + name
 				+ Constants.GRAPH_SUFFIX), chart, width, height);
+		
 	}
 
 	/***
@@ -213,7 +234,7 @@ public class JFreeSparkChart extends SparkChart {
 			XYSeries s = new XYSeries(list.get(start + i), true, false);
 			int j = 0;
 			for (j = 0; j < linenum; j++) {
-				s.add(j * 2, data[j][start + i]);
+				s.add(j * dstat_sample, data[j][start + i]);
 			}
 			dataset.addSeries(s);
 		}
@@ -278,7 +299,7 @@ public class JFreeSparkChart extends SparkChart {
 				BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f,
 				new float[] { 5.0f, 5.0f }, 0.0f);
 		for (int i = 0; i < marker1.length; i++) {
-			Marker m = new ValueMarker(marker1[i] / 1000, Color.gray,
+			Marker m = new ValueMarker(marker1[i], Color.gray,
 					dashedStroke, null, null, 0.5f);
 			plot.addDomainMarker(m, Layer.FOREGROUND);
 		}
@@ -313,10 +334,9 @@ public class JFreeSparkChart extends SparkChart {
 			st.nextToken();
 			if (name.compareTo(Constants.STAGE_NAME) == 0)
 				st.nextToken();
-			if (n == 0)
-				offset = Long.parseLong(st.nextToken().trim());
+			String start = st.nextToken();
 			end = Long.parseLong(st.nextToken().trim());
-			duration = (long) (end - offset);
+			duration = (long) (end - offset)/1000;
 			list.add(duration);
 			n++;
 		}
@@ -326,9 +346,26 @@ public class JFreeSparkChart extends SparkChart {
 			timeend[i] = list.get(i);
 		return timeend;
 	}
+	
+	private void getStartTime() throws Exception {
+		FileReader fr = new FileReader(csvFolder + Constants.JOB_NAME + Constants.CSV_SUFFIX);
+		BufferedReader br = new BufferedReader(fr);
+		String line = br.readLine();
+		while (line == "") {
+			line = br.readLine();
+			if (line == null) {
+				throw new Exception("nothing in job.csv.");
+			}
+		}
+		StringTokenizer st = new StringTokenizer(line, Constants.DATA_SPLIT);
+		st.nextToken();
+		String start = st.nextToken();
+		offset = Long.parseLong(start.trim());
+	}
 
 	@Override
 	public void createChart() throws Exception {
+		getStartTime();
 		List<String> slaves = Util.getSlavesHost();
 		for (String slave : slaves) {
 			currentSlave = slave;

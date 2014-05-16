@@ -167,8 +167,9 @@ public class JFreeSparkChart extends SparkChart {
 		CategoryDataset dataset = DatasetUtilities.createCategoryDataset(row,
 				column, newData);
 		final JFreeChart chart = ChartFactory.createStackedBarChart(name
-				+ "-TIME", name, // domain axis label
-				"TIME", // range axis label
+				+ "-TIME", 
+				name.toUpperCase() + " ID", // domain axis label
+				"time-line", // range axis label
 				dataset, // data
 				PlotOrientation.HORIZONTAL, // the plot orientation
 				false, // include legend
@@ -239,11 +240,19 @@ public class JFreeSparkChart extends SparkChart {
 			dataset.addSeries(s);
 		}
 		final XYPlot plot;
+		String rangeAxisLabel = name;
+		if (name.compareTo("MEMORY") == 0 ||
+				name.compareTo("NETWORK") == 0 ||
+				name.compareTo("DISK") == 0) {
+			rangeAxisLabel = "BYTE";
+		} else if (name.compareTo("CPU") == 0) {
+			rangeAxisLabel = "PERCENTAGE";
+		}
 		if (flag == true) {
 			chart = ChartFactory.createStackedXYAreaChart(
 					name + " Utilization", // chart title
-					"", // domain axis label
-					name, // range axis label
+					"time-line", // domain axis label
+					rangeAxisLabel, // range axis label
 					dataset, // data
 					PlotOrientation.VERTICAL, // orientation
 					true, // include legend
@@ -265,7 +274,7 @@ public class JFreeSparkChart extends SparkChart {
 			rangeAxis.setUpperBound(max);
 		} else {
 			chart = ChartFactory.createXYLineChart(name + " Throughput",
-					"time-line", name, dataset, PlotOrientation.VERTICAL, true,
+					"time-line", rangeAxisLabel, dataset, PlotOrientation.VERTICAL, true,
 					false, false);
 
 			plot = (XYPlot) chart.getPlot();

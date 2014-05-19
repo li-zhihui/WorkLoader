@@ -6,6 +6,10 @@ import workload.spark.WorkloadConf;
 public class Backup {
 
 	public static void backup() throws Exception {
+               if (WorkloadConf.get(Constants.WORKLOAD_EXECUTE_BACKUP).equals("false")) {
+                       return;
+               }
+
 		Runtime run = Runtime.getRuntime();
 		String backupName = WorkloadConf.get(Constants.WORKLOAD_NAME) + "_"
 				+ System.currentTimeMillis() + "/";

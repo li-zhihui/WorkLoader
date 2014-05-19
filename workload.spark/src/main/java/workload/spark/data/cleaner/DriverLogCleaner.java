@@ -17,15 +17,6 @@ public class DriverLogCleaner extends Cleaner {
 	public void clean() throws Exception {
 		this.cleaner.clean();
 
-		String workloadConfPath = Constants.WORKLOAD_CONF_PREFIX + "."
-				+ WorkloadConf.get(Constants.WORKLOAD_NAME) + "."
-				+ Constants.WORKLOAD_PATH_SUFFIX;
-		System.out.println(workloadConfPath);
-		String workloadPath = WorkloadConf.get(workloadConfPath);
-		String logFile = workloadPath
-				+ WorkloadConf.get(Constants.WORKLOAD_NAME)
-				+ Constants.DRIVER_LOG_SUFFIX;
-		DriverlogMain.processFile(logFile);
 		String[] csvFiles = { "job", "stage", "task", "*rddmem" };
 		Runtime runtime = Runtime.getRuntime();
 		for (String csvFile : csvFiles) {

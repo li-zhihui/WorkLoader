@@ -24,6 +24,7 @@ public class Constants {
 	public static final String WORKLOAD_CONF_PREFIX = "workload";
 	public static final String WORKLOAD_PATH_SUFFIX = "path";
 	public static final String WORKLOAD_RUN_SUFFIX = "run";
+	public static final String WORKLOAD_EXECUTE_BACKUP = "workload.execute.backup";
 
 	/**************** Runtime *****************/
 	public static final String DRIVER_LOG_SUFFIX = "log.log";

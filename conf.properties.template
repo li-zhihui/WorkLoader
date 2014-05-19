@@ -1,20 +1,25 @@
-spark.home=/home/frank/work/github/spark/
+spark.home=/home/frank/spark-0.9.0-incubating-bin-hadoop1/
 workload.path.root=/
 
-workload.nweight.path=/home/frank/work/git/sotc_cloud-youku/nweight/
+workload.nweight.path=/home/frank/liye/workload/youku/nweight/
 workload.nweight.run=run.sh
+
+workload.billboard.path=/home/frank/workload/billboard/
+workload.billboard.run=run.sh
 
 workload.output.path=/tmp/workload/
 workload.backup.path=/tmp/
 
-workload.step.runner=false
+workload.step.runner=true
 workload.step.parser=true
 workload.step.loader=true
 workload.step.cleaner=true
 workload.step.chart=true
+workload.execute.backup=true
+
 workload.step.report=false
 
 workload.log=true
 
 #dstat sample frenquency, time unit is second
-dstat.sample.freq=1
+dstat.sample.freq=2

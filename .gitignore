@@ -5,3 +5,5 @@ target
 .settings
 SparkLogAnalyzer.iml
 *.log
+null
+conf.properties

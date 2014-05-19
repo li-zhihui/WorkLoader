@@ -43,7 +43,7 @@ public class JFreeSparkChart extends SparkChart {
 
 	// FIXME fixed row & col?
 	private static final int count = 7;
-	private static int row = 2000;
+	private static int row = 20000;
 	private final static int col = 20;
 	private int linenum = 0;// num of data instances
 	private String currentSlave;

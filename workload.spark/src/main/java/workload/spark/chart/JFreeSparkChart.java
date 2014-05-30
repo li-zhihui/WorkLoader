@@ -203,9 +203,7 @@ public class JFreeSparkChart extends SparkChart {
 		}
 		int width = 800;
 		int height = 350;
-		ChartUtilities.saveChartAsPNG(new File(jpgFolder + name
-				+ Constants.GRAPH_SUFFIX), chart, width, height);
-		
+		outputGraph(name, chart, width, height);
 	}
 
 	/***
@@ -306,8 +304,7 @@ public class JFreeSparkChart extends SparkChart {
 		plot.setDomainGridlinesVisible(false);
 		int width = 800;
 		int height = 350;
-		ChartUtilities.saveChartAsPNG(new File(jpgFolder + currentSlave + "_"
-				+ name + Constants.GRAPH_SUFFIX), chart, width, height);
+		outputGraph(name, chart, width, height);
 	}
 
 	/**
@@ -397,5 +394,15 @@ public class JFreeSparkChart extends SparkChart {
 		String taskCp = "/bin/cp " + csvFolder + "sorttmp" + Constants.CSV_SUFFIX
 				+ " " + csvFolder + filename + Constants.CSV_SUFFIX;
 		Util.runCmd(taskCp);
+	}
+	
+	public void outputGraph(String name, JFreeChart chart, int width, int height) throws IOException {
+		if (Constants.GRAPH_SUFFIX.equals(".png")) {
+		ChartUtilities.saveChartAsPNG(new File(jpgFolder + name
+				+ Constants.GRAPH_SUFFIX), chart, width, height);
+		} else {
+			ChartUtilities.saveChartAsJPEG(new File(jpgFolder + name
+					+ Constants.GRAPH_SUFFIX), chart, width, height);
+		}
 	}
 }

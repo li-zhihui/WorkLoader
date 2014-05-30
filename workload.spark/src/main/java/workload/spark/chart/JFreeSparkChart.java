@@ -51,8 +51,7 @@ public class JFreeSparkChart extends SparkChart {
 	ArrayList<String> list = new ArrayList<String>();// store item name
 	double offset = 0.0;
 	private final int dstat_sample = Integer.valueOf(WorkloadConf.get(Constants.DSTAT_SAMPLE_FREQ));
-
-
+	
 	/***
 	 * 
 	 * read csv file and store the data in 2-D double matrix and item name in
@@ -104,16 +103,8 @@ public class JFreeSparkChart extends SparkChart {
 		br.close();
 	}
 
-	public void createCatogoryChart(String name) throws IOException, Exception {
-		if (name.compareTo(Constants.TASK_NAME) == 0) {
-			String taskSort = "sort -t \",\" -g -k 5 " + 
-					csvFolder + name + Constants.CSV_SUFFIX + 
-					" > " + csvFolder + "tasktmp" + Constants.CSV_SUFFIX;
-			Util.runCmd(taskSort);
-			String taskCp = "/bin/cp " + csvFolder + "tasktmp" + Constants.CSV_SUFFIX
-					+ " " + csvFolder + name + Constants.CSV_SUFFIX;
-			Util.runCmd(taskCp);
-		}
+	public void createCatogoryChart(String name, int sortCriteria) throws IOException, Exception {
+		sortCSVFile(name, sortCriteria);
 		FileReader fr = new FileReader(csvFolder + name + Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
 		String line;
@@ -357,6 +348,8 @@ public class JFreeSparkChart extends SparkChart {
 	}
 	
 	private void getStartTime() throws Exception {
+		sortCSVFile(Constants.JOB_NAME, 2);
+
 		FileReader fr = new FileReader(csvFolder + Constants.JOB_NAME + Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
 		String line = br.readLine();
@@ -384,9 +377,25 @@ public class JFreeSparkChart extends SparkChart {
 			createChart(14, 2, false, "NETWORK");
 			createChart(18, 2, false, "DISK");
 		}
-		createCatogoryChart(Constants.JOB_NAME);
-		createCatogoryChart(Constants.STAGE_NAME);
-		createCatogoryChart(Constants.TASK_NAME);
+		createCatogoryChart(Constants.JOB_NAME, 2);
+		createCatogoryChart(Constants.STAGE_NAME, 3);
+		createCatogoryChart(Constants.TASK_NAME, 4);
 	}
 
+	/**
+	 * sort filename.csv according to the column indexed at sortCriteria
+	 * 
+	 * @param filename
+	 * @param sortCriteria
+	 * @throws Exception
+	 */
+	public void sortCSVFile(String filename, int sortCriteria) throws Exception {
+		String taskSort = "sort -t \",\" -g -k " + Integer.toString(sortCriteria) + 
+				" " + csvFolder + filename + Constants.CSV_SUFFIX + 
+				" > " + csvFolder + "sorttmp" + Constants.CSV_SUFFIX;
+		Util.runCmd(taskSort);
+		String taskCp = "/bin/cp " + csvFolder + "sorttmp" + Constants.CSV_SUFFIX
+				+ " " + csvFolder + filename + Constants.CSV_SUFFIX;
+		Util.runCmd(taskCp);
+	}
 }

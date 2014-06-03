@@ -304,7 +304,7 @@ public class JFreeSparkChart extends SparkChart {
 		plot.setDomainGridlinesVisible(false);
 		int width = 800;
 		int height = 350;
-		outputGraph(name, chart, width, height);
+		outputGraph(currentSlave + "_" + name, chart, width, height);
 	}
 
 	/**

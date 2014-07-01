@@ -1,0 +1,8 @@
+vmstat.command=vmstat
+vmstat.des.start=2
+vmstat.des.data=[procs,line:run,block],[memory,stack:swap,free,buffer,cache],[swap,line:si,so],[io,line:bi,bo],[system,line:in,cs],[cpu,stack:us,sy,id,wa]
+
+
+dstat.command=dstat --mem --io --cpu --net -N eth0,eth1,total --disk --time --output
+vmstat.des.start=6
+dstat.des.data=[memory,stack:used,buffer,cached,free],[io,line:read,writ],[cpu,stack:usr,idl,wai,hiq,siq],[network eth0,line:recv,send],[network eth1,line:recv,send],[network total,line:recv,send][disk,line:read,writ]

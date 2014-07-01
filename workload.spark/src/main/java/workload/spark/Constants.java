@@ -8,6 +8,7 @@ public class Constants {
 	public static final String CSV_SUFFIX = ".csv";
 	public static final String GRAPH_SUFFIX = ".jpg";
 	public static final String DATA_SPLIT = ",";
+	public static final String DSTAT_COMMAND="dstat";
 
 	/************* WorkloadEnv *************/
 	public static final String SPARK_HOME = "spark.home";
@@ -30,7 +31,14 @@ public class Constants {
 	public static final String DRIVER_LOG_SUFFIX = "log.log";
 	public static final String DRIVER_CSV_PAHT = "/tmp";
 	public static final String WORKLOAD_LOG = "workload.log";
+	public static final String WORKLOAD_RUNTIME = "workload.runtime";
 	
 	/**************** other conf********************/
-	public static final String DSTAT_SAMPLE_FREQ = "dstat.sample.freq";
+	public static final String WORKLOAD_RUNNER_COMMAND = "workload.runner.command";
+	public static final String WORKLOAD_RUNNER_FREQUENCY = "workload.runner.frequency";
+	public static final String WORKLOAD_RUNNER_SLEEPTIME= "workload.runner.sleeptime";
+	public static final String WORKLOAD_CHART_XMAX = "workload.chart.xmax";
+	public static final String WORKLOAD_CHART_WIDTH = "workload.chart.width";
+	public static final String WORKLOAD_CHART_HEIGHT = "workload.chart.height";
+	
 }

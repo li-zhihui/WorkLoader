@@ -7,10 +7,12 @@ import workload.spark.WorkloadConf;
 public class LoaderFactory {
 	public static Loader getLoader() {
 
-		if (WorkloadConf.get(Constants.WORKLOAD_STEP_LOADER).equals("false")) {
+		if (WorkloadConf.get(Constants.WORKLOAD_STEP_LOADER).equals("emptyLoader")) {
 			return new EmptyLoader();
 		}
-		Util.print("call linux loader");
-		return new LinuxLoader();
+		else if(WorkloadConf.get(Constants.WORKLOAD_STEP_LOADER).equals("linuxLoader"))
+			return new LinuxLoader();
+		else 
+			return new XLoader();
 	}
 }

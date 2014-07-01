@@ -1,10 +1,15 @@
 package workload.spark;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class Util {
 	private static List<String> slaves;
@@ -55,5 +60,27 @@ public class Util {
 		if ("true".equals(WorkloadConf.get(Constants.WORKLOAD_LOG))) {
 			System.out.println(log);
 		}
+	}
+
+	/**
+	 * build properties for every execution, support runtime load configuration.
+	 * 
+	 * @param conf
+	 * @return
+	 * @throws IOException
+	 */
+	public static Properties buildProperties(String conf) throws IOException {
+		InputStream in = new BufferedInputStream(new FileInputStream(conf));
+		Properties props = new Properties();
+		props.load(in);
+		in.close();
+		return props;
+	}
+	public static List<String> getList(String str,String split){
+		String[] items = str.split(split);
+		List<String> list = new ArrayList<String>();
+		for(int i=0;i<items.length; i++)
+			list.add(items[i]);
+		return list;
 	}
 }

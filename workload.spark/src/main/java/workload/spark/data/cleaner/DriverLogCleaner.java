@@ -1,6 +1,5 @@
 package workload.spark.data.cleaner;
 
-import com.intel.spark.log.DriverlogMain;
 
 import workload.spark.Constants;
 import workload.spark.WorkloadConf;

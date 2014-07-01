@@ -7,6 +7,7 @@ import java.util.Map;
  *
  */
 public class WorkloadContext {
+	
 	private static Map<Object, Object> map = new HashMap<Object, Object>();
 
 	public static void put(Object key, Object value) {

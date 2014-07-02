@@ -1,0 +1,21 @@
+Linux 3.2.0-29-generic (sr148)  07/02/2014      _x86_64_        (16 CPU)
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0.15    0.00    0.04    0.07    0.00   99.75
+
+Device:            tps    kB_read/s    kB_wrtn/s    kB_read    kB_wrtn
+sdb               0.00         0.00         0.00       1318          0
+sdd               0.00         0.00         0.00        702          0
+sdc               0.00         0.00         0.00        702          0
+sde               0.00         0.00         0.00       1319          0
+sda               5.64         5.13        63.25   16489679  203127292
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0.00    0.00    0.03    0.38    0.00   99.59
+
+Device:            tps    kB_read/s    kB_wrtn/s    kB_read    kB_wrtn
+sdb               0.00         0.00         0.00          0          0
+sdd               0.00         0.00         0.00          0          0
+sdc               0.00         0.00         0.00          0          0
+sde               0.00         0.00         0.00          0          0
+sda              11.00         0.00        82.00          0        164

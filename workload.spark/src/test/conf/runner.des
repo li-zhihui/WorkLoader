@@ -1,7 +1,6 @@
-
 vmstat.command=vmstat -n
 vmstat.startSkip=2
-vmstat.datadatagroup=null
+vmstat.datagroup=null
 vmstat.datagroup.split=\ 
 vmstat.datagroup.head=run,block,swap,free,buffer,cache,si,so,bi,bo,in,cs,us,sy,id,wa
 vmstat.chart.list=proc,memory,swap,io,system,cpu
@@ -10,7 +9,7 @@ vmstat.chart.memory=stack:swap,free,buffer,cache
 vmstat.chart.swap=line:si,so
 vmstat.chart.io=line:bi,bo
 vmstat.chart.system=line:in,cs
-vmstat.chart.cpu=stack:us,sy,id,wa
+vmstat.chart.cpu=stack:us,sy,id,wal
 
 
 
@@ -24,7 +23,7 @@ dstat.chart.memory=stack:used,buffer,cached,free
 dstat.chart.io=line:read,writ
 dstat.chart.cpu=stack:usr,idl,wai,hiq,siq
 dstat.chart.network0=line:eth0recv,eth0send
-dstat.chart.network1=line:eth1recv,eth1send
+dstat.chart.network1=line:eth1recv,eth1senddstat
 dstat.chart.networkt=line:totalrecv,totalsend
 dstat.chart.disk=line:read,writ
 
@@ -45,9 +44,9 @@ iostat.chart.devicesda=groupByRow device:sda;line:tps,kB_read/s,kB_wrtn/s,kB_rea
 
 sar.command=sar -P -ALL
 sar.startSkip=1
-sar.datagroup=null
-sar.datagroup.split=\ 
-sar.datagroup.head=time,cpu,user,nice,system,iowait,steal,idle
+sar.datagroup=[cpu,indexOf:CPU]
+sar.datagroup.cpu.split=\ 
+sar.datagroup.cpu.head=time,cpu,user,nice,system,iowait,steal,idle
 sar.chart.list=cpuall,cpu0,user
 sar.chart.cpuall=groupByRow cpu:all;line:user,nice,system,iowait,steal,idle
 sar.chart.cpu0=groupByRow cpu:0;line:user,nice,system,iowait,steal,idle

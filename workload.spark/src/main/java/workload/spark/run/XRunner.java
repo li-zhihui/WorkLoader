@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import workload.spark.Constants;
 import workload.spark.Util;
 import workload.spark.WorkloadConf;
@@ -68,6 +69,7 @@ public class XRunner extends Runner {
 					List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup.head"),",");
 					gd.setHeadDes(headDes);
 					gd.setSplit(des.getProperty(command[i]+".datagroup.split"));
+					gd.setIsSpaceDivided(des.getProperty(command[i]+".datagroup.isSpaceDivided"));
 					groupDeses.add(gd);
 				}
 				else{
@@ -78,6 +80,7 @@ public class XRunner extends Runner {
 						List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".head"),",");
 						gd.setHeadDes(headDes);
 						gd.setSplit(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".split"));
+						gd.setIsSpaceDivided(des.getProperty(command[i]+"datagroup." + gd.getGroupName()+".isSpaceDivided"));
 						groupDeses.add(gd);
 					}
 				}
@@ -93,8 +96,8 @@ public class XRunner extends Runner {
 							System.out.println("Wrong Chart DES");
 							System.exit(1);
 						}
-						chartInfo = chartItem[0];
-						String groupInfo = chartItem[1];
+						chartInfo = chartItem[1];
+						String groupInfo = chartItem[0];
 						chartGroupInfoHandler(chd,groupInfo);
 					}
 					else
@@ -133,8 +136,14 @@ public class XRunner extends Runner {
 			System.exit(1);
 		}
 		gd.setGroupName(groupItem[0].split(",")[0]);
-		//FIXME indexOf??
-		gd.setRegex(Regex.startWith);
+		String regex = groupItem[0].split(",")[1];
+		if(regex.equals(Regex.indexOf.toString()))
+			gd.setRegex(Regex.indexOf);
+		else if(regex.equals(Regex.indexOf.toString()))
+			gd.setRegex(Regex.startWith);
+		else{
+			System.out.println("Cannot handle regex: " + regex);
+		}
 		gd.setRegexValue(groupItem[1]);
 	}
 	private void chartGroupInfoHandler(ChartDes chd, String groupInfo) {
@@ -143,14 +152,15 @@ public class XRunner extends Runner {
 				chd.setChartGroupByType(ChartGroupByType.row);
 		else if(groupType.endsWith("Col"))
 			chd.setChartGroupByType(ChartGroupByType.col);
+		//System.out.println(groupInfo);
 		chd.setGroupByName(groupInfo.split(" ")[1].split(":")[0]);
 		chd.setGroupByValue(groupInfo.split(" ")[1].split(":")[1]);
 	}
 
 	private void chartInfoHandler(ChartDes chd, String chartInfo) {
-		if(chartInfo.split(":")[0].equalsIgnoreCase("line"))
+		if(chartInfo.split(":")[0].equalsIgnoreCase(ChartType.line.toString()))
 			chd.setChartType(ChartType.line);
-		else if (chartInfo.split(":")[0].equalsIgnoreCase("line"))
+		else if (chartInfo.split(":")[0].equalsIgnoreCase(ChartType.stack.toString()))
 			chd.setChartType(ChartType.stack);
 		chd.setColName(Util.getList(chartInfo.split(":")[1], ","));
 	}
@@ -171,7 +181,43 @@ public class XRunner extends Runner {
 		}
 	}
 	
+	public void testCommand(){
+		String[] command = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND).split(Constants.DATA_SPLIT);
+		for(int i = 0; i < command.length; i++){
+			CommandDes cd = (CommandDes) WorkloadContext.get(command[i]);
+			System.out.println("Command Name: "+cd.getCommandName());
+			System.out.println("startSkip: " + cd.getStartSkip());
+			List<GroupDes> gds = cd.getGroupDes();
+			List<ChartDes> cds = cd.getChartDes();
+			System.out.println("Group Deses");
+			for(int j = 0 ; j < gds.size(); j++){
+				System.out.println("Group Name: " + gds.get(j).getGroupName());
+				System.out.println("Regex: " + gds.get(j).getRegex());
+				System.out.println("Regex Value: " + gds.get(j).getRegexValue());
+				System.out.println("Group Split: " + gds.get(j).getSplit());
+				System.out.println("isSpaceDivided: " + gds.get(j).getIsSpaceDivided());
+				System.out.print("Group Head: " );
+				printList(gds.get(j).getHeadDes());
+			}
+			System.out.println("Chart Deses");
+			for(int j=0; j < cds.size(); j++){
+				System.out.println("ChartName: " + cds.get(j).getChartName());
+				System.out.println("GroupByName: " + cds.get(j).getGroupByName());
+				System.out.println("GroupByValue: " + cds.get(j).getGroupByValue());
+				System.out.println("ChartGroupByType: " + cds.get(j).getChartGroupByType());
+				System.out.println("ChartType: " + cds.get(j).getChartType());
+				System.out.println("GroupColName: " );
+				printList(cds.get(j).getColName());
+			}
+		}
+	}
 	
+	public void printList(List<String> list){
+		for(int i=0; i<list.size(); i++){
+			System.out.print(list.get(i) + " ");
+		}
+		System.out.println();
+	}
 	
 	@Override
 	public void run() throws Exception {

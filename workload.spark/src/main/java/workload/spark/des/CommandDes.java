@@ -23,4 +23,17 @@ public class CommandDes {
 	public void setGroupDeses(List<GroupDes> groupDeses){
 		this.groupDeses = groupDeses;
 	}
+	public String getCommandName(){
+		return name;
+	}
+	public int getStartSkip(){
+		return startSkip;
+	}
+	public List<ChartDes> getChartDes(){
+		return chartDeses;
+	}
+	public List<GroupDes> getGroupDes(){
+		return groupDeses;
+	}
+	
 }

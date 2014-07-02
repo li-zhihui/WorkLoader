@@ -17,12 +17,10 @@ workload.step.loader=emptyLoader
 workload.step.cleaner=emptyCleaner
 workload.step.chart=emptyChart
 workload.execute.backup=false
-
 workload.step.report=false
-
 workload.log=true
 
-workload.runner.command=
+workload.runner.command=iostat,sar
 #second in unit
 workload.runner.sleeptime=40
 workload.runner.frequency=2

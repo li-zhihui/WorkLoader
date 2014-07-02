@@ -31,6 +31,7 @@ public class Executor {
 		WorkloadConf.set(p);
 		Init.init();
 		RunnerFactory.getRunner().run();
+		
 		LogParserFactory.getLogParser().parse();
 		LoaderFactory.getLoader().loadData();
 		CleanerFactory.getCleaner().clean();

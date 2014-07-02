@@ -5,7 +5,7 @@ import java.util.List;
 public class ChartDes {
 
 	String chartName;
-	ChartGroupByType groupByType;
+	ChartGroupByType groupByType = ChartGroupByType.row;
 	ChartType chartType;
 	String groupByName = null;
 	String groupByValue = null;
@@ -28,5 +28,23 @@ public class ChartDes {
 	}
 	public void setChartType(ChartType chartType){
 		this.chartType = chartType;
+	}
+	public String getChartName(){
+		return chartName;
+	}
+	public ChartGroupByType getChartGroupByType(){
+		return groupByType;
+	}
+	public ChartType getChartType(){
+		return chartType;
+	}
+	public String getGroupByName(){
+		return groupByName;
+	}
+	public String getGroupByValue(){
+		return groupByValue;
+	}
+	public List<String> getColName(){
+		return colName;
 	}
 }

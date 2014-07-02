@@ -19,7 +19,7 @@ public class JSTChart extends SparkChart{
 	List<List<Double>> taskData;
 	static double[] jobMarker = null;
 	static double[] stageMarker = null;
-	Long startTime;
+	static Long startTime;
 	
 	
 	public double[] findTimeEnd(List<List<Double>> list){
@@ -73,7 +73,7 @@ public class JSTChart extends SparkChart{
 		return tempData;
 	}
 	
-	public  void getStartTime() throws Exception {
+	public long setStartTime() throws Exception {
 		//sortCSVFile(Constants.JOB_NAME, 2);
 		FileReader fr = new FileReader(csvFolder + Constants.JOB_NAME + Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
@@ -88,9 +88,10 @@ public class JSTChart extends SparkChart{
 		StringTokenizer st = new StringTokenizer(line, Constants.DATA_SPLIT);
 		st.nextToken();
 		String start = st.nextToken();
-		startTime = Long.parseLong(start.trim());
+		br.close();
+		return Long.parseLong(start.trim());
 	}
-	
+
 //	 * sort filename.csv according to the column indexed at sortCriteria
 //	 * 
 //	 * @param filename
@@ -106,8 +107,12 @@ public class JSTChart extends SparkChart{
 //				+ " " + csvFolder + filename + Constants.CSV_SUFFIX;
 //		Util.runCmd(taskCp);
 //	}
+	public static long getStartTime(){
+		return startTime;
+	}
+	
 	public void getChartBound() throws Exception{
-		getStartTime();
+		startTime = setStartTime();
 		jobData = loadJSTCSV(Constants.JOB_NAME,2);
 		stageData = loadJSTCSV(Constants.STAGE_NAME,3);
 		taskData = loadJSTCSV(Constants.TASK_NAME,4);

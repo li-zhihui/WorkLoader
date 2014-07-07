@@ -11,12 +11,14 @@ public class JFreeChartTest extends BaseTestCase {
 	public void testCreateChart() throws Exception {
 		setUp();
 		try {
-			SparkChart chart = new XChart();
+			XChart xc = new XChart();
 			XRunner runner = new XRunner();
 			runner.run();
-			chart.setCsvFolder(testDataFolder);
-			chart.setJpgFolder(testDataFolder);
-			chart.createChart();
+			JobChart jc = new JSTChart();
+			xc.setCsvFolder(testDataFolder);
+			xc.setJpgFolder(testDataFolder);
+			xc.setJobChart(jc);
+			xc.createChart();
 		} catch (Exception e) {
 			e.printStackTrace();
 			super.assertTrue(false);

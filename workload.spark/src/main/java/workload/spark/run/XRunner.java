@@ -13,7 +13,7 @@ import workload.spark.Util;
 import workload.spark.WorkloadConf;
 import workload.spark.WorkloadContext;
 import workload.spark.des.ChartDes;
-import workload.spark.des.ChartGroupByType;
+import workload.spark.des.ChartProcessType;
 import workload.spark.des.ChartType;
 import workload.spark.des.CommandDes;
 import workload.spark.des.GroupDes;
@@ -31,7 +31,8 @@ public class XRunner extends Runner {
 		String str = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND);
 		String []command =  str.split(Constants.DATA_SPLIT);
 		if(command.length == 1 && command[0].equals("")){
-			System.out.println("NO COMMAND CONFIGURED");
+			br.close();
+			throw new Exception("NO COMMAND CONFIGURED");
 		}
 		else{
 			Properties des = Util.buildProperties(WorkloadConf.get(Constants.WORKLOAD_WORKDIR) + "conf/runner.des");
@@ -69,7 +70,6 @@ public class XRunner extends Runner {
 					List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup.head"),",");
 					gd.setHeadDes(headDes);
 					gd.setSplit(des.getProperty(command[i]+".datagroup.split"));
-					gd.setIsSpaceDivided(des.getProperty(command[i]+".datagroup.isSpaceDivided"));
 					groupDeses.add(gd);
 				}
 				else{
@@ -77,10 +77,9 @@ public class XRunner extends Runner {
 					for(int k = 0; k < group.length; k++){
 						GroupDes gd = new GroupDes();
 						groupInfoHandler(gd,group[k].substring(1));
-						List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".head"),",");
+						List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".head"),Constants.DATA_SPLIT);
 						gd.setHeadDes(headDes);
 						gd.setSplit(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".split"));
-						gd.setIsSpaceDivided(des.getProperty(command[i]+"datagroup." + gd.getGroupName()+".isSpaceDivided"));
 						groupDeses.add(gd);
 					}
 				}
@@ -88,20 +87,43 @@ public class XRunner extends Runner {
 				for(int m = 0; m < chartList.length; m++){
 					ChartDes chd = new ChartDes();
 					chd.setChartName(chartList[m]);
-					String chartContent = des.getProperty(command[i] + ".chart." + chartList[m]);
+					String chartLine = des.getProperty(command[i] + ".chart." + chartList[m]);
 					String chartInfo;
-					if(chartContent.startsWith("group")){
-						String[] chartItem = chartContent.split(";");
-						if(chartItem.length != 2){
-							System.out.println("Wrong Chart DES");
-							System.exit(1);
-						}
-						chartInfo = chartItem[1];
-						String groupInfo = chartItem[0];
-						chartGroupInfoHandler(chd,groupInfo);
+					if(chartLine == null){
+						br.close();
+						throw new Exception("Cannot find chart Info for "+ chartList[m]);
 					}
-					else
-						chartInfo = chartContent;
+					String[] chartItem = chartLine.split(";");
+					chd.setYName(chartItem[0].split(":")[1]);
+					if(chartItem.length == 4){
+						chartInfo = chartItem[3];
+						String groupName = chartItem[1].split(":")[1];
+						chd.setGroupName(groupName);
+						String processInfo = chartItem[2];
+						if(processInfo.startsWith(ChartProcessType.aggregate.toString())){
+							chd.setChartProcessType(ChartProcessType.aggregate);
+							chd.setAggregateName(processInfo.split(" ")[1]);
+						}
+						else if(processInfo.startsWith(ChartProcessType.select.toString())){
+								chd.setChartProcessType(ChartProcessType.select);
+								String[] selectInfo = processInfo.split(" ")[1].split(":");
+								chd.setSelectName(selectInfo[0]);
+								if(selectInfo.length > 1){
+									chd.setSelectValue(selectInfo[1]);
+								}
+						}
+						else{
+							br.close();
+							throw new Exception("WRONG PROCESS TYPE: " + processInfo);
+						}
+							
+					}
+					else if(chartItem.length == 2)
+						chartInfo = chartItem[1];
+					else{
+						br.close();
+						throw new Exception("WRONG CHART DES: "+chartLine);
+					}
 					chartInfoHandler(chd,chartInfo);
 					chartDeses.add(chd);
 				}
@@ -129,7 +151,7 @@ public class XRunner extends Runner {
 		br.close();
 	}
 	
-	private void groupInfoHandler(GroupDes gd,String info){
+	private void groupInfoHandler(GroupDes gd,String info) throws Exception{
 		String[] groupItem =info.split(":");
 		if(groupItem.length != 2){
 			System.out.println("Wrong Group Format");
@@ -139,23 +161,14 @@ public class XRunner extends Runner {
 		String regex = groupItem[0].split(",")[1];
 		if(regex.equals(Regex.indexOf.toString()))
 			gd.setRegex(Regex.indexOf);
-		else if(regex.equals(Regex.indexOf.toString()))
+		else if(regex.equals(Regex.startWith.toString()))
 			gd.setRegex(Regex.startWith);
 		else{
-			System.out.println("Cannot handle regex: " + regex);
+			throw new Exception("Cannot handle regex: " + regex);
 		}
 		gd.setRegexValue(groupItem[1]);
 	}
-	private void chartGroupInfoHandler(ChartDes chd, String groupInfo) {
-		String groupType = groupInfo.split(" ")[0];
-		if(groupType.endsWith("Row"))
-				chd.setChartGroupByType(ChartGroupByType.row);
-		else if(groupType.endsWith("Col"))
-			chd.setChartGroupByType(ChartGroupByType.col);
-		//System.out.println(groupInfo);
-		chd.setGroupByName(groupInfo.split(" ")[1].split(":")[0]);
-		chd.setGroupByValue(groupInfo.split(" ")[1].split(":")[1]);
-	}
+	
 
 	private void chartInfoHandler(ChartDes chd, String chartInfo) {
 		if(chartInfo.split(":")[0].equalsIgnoreCase(ChartType.line.toString()))
@@ -195,18 +208,20 @@ public class XRunner extends Runner {
 				System.out.println("Regex: " + gds.get(j).getRegex());
 				System.out.println("Regex Value: " + gds.get(j).getRegexValue());
 				System.out.println("Group Split: " + gds.get(j).getSplit());
-				System.out.println("isSpaceDivided: " + gds.get(j).getIsSpaceDivided());
 				System.out.print("Group Head: " );
 				printList(gds.get(j).getHeadDes());
 			}
 			System.out.println("Chart Deses");
 			for(int j=0; j < cds.size(); j++){
 				System.out.println("ChartName: " + cds.get(j).getChartName());
-				System.out.println("GroupByName: " + cds.get(j).getGroupByName());
-				System.out.println("GroupByValue: " + cds.get(j).getGroupByValue());
-				System.out.println("ChartGroupByType: " + cds.get(j).getChartGroupByType());
+				System.out.println("YName: " + cds.get(j).getYName());
+				System.out.println("GroupName: " + cds.get(j).getGroupName());
+				System.out.println("ProcessType : " + cds.get(j).getChartProcessType());
+				System.out.println("Select Name: " + cds.get(j).getSelectName());
+				System.out.println("Select Value: " + cds.get(j).getSelectValue());
 				System.out.println("ChartType: " + cds.get(j).getChartType());
 				System.out.println("GroupColName: " );
+				System.out.println("AggregateName: " + cds.get(j).getAggregateName());
 				printList(cds.get(j).getColName());
 			}
 		}
@@ -222,16 +237,15 @@ public class XRunner extends Runner {
 	@Override
 	public void run() throws Exception {
 		prepareDRunSh();
-//		copyDRun2WorkloadPath();
-//		String runsh = Util.getWorkloadPath() + "drun_wl.sh ";
-//		Runtime runtime = Runtime.getRuntime();
-//		String[] runCmd = { "/bin/sh", "-c", runsh };
-//		System.out.println(runsh);
-//		if (runtime.exec(runCmd, null, new File(Util.getWorkloadPath())).waitFor() != 0) {
-//			throw new Exception("drun failed.");
-//		}
+		copyDRun2WorkloadPath();
+		String runsh = Util.getWorkloadPath() + "drun_wl.sh ";
+		Runtime runtime = Runtime.getRuntime();
+		String[] runCmd = { "/bin/sh", "-c", runsh };
+		System.out.println(runsh);
+		if (runtime.exec(runCmd, null, new File(Util.getWorkloadPath())).waitFor() != 0) {
+			throw new Exception("drun failed.");
+		}
 		//FIXME record the start time??
 		WorkloadContext.put(Constants.WORKLOAD_RUNTIME, System.currentTimeMillis());
 	}
-
 }

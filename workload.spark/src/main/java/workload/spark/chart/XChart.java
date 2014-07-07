@@ -1,113 +1,185 @@
 package workload.spark.chart;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
+import java.util.Map;
 
 import workload.spark.Constants;
 import workload.spark.Util;
 import workload.spark.WorkloadConf;
 import workload.spark.WorkloadContext;
+import workload.spark.chart.preprocessor.XChartPreprocessor;
+import workload.spark.des.ChartDes;
+import workload.spark.des.ChartProcessType;
+import workload.spark.des.ChartType;
+import workload.spark.des.CommandDes;
+import workload.spark.des.GroupDes;
 
-public class XChart extends JSTChart {	
+public class XChart extends SparkChart implements SystemChart {
+	JobChart jc;
+
 	@Override
 	public void createChart() throws Exception {
-		getChartBound();
-		//readFile 
-		String[] command = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND).split(Constants.DATA_SPLIT);
-		for(int i = 0; i < command.length; i++){
-			int start = (Integer) WorkloadContext.get(command[i]+".des.start");
+		// GENERATE JOB/STAGE/TASK GRAPH AND MAKE JON AND STAGE MARKER AVAILABLE
+		String[] command = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND)
+				.split(Constants.DATA_SPLIT);
+		for (int i = 0; i < command.length; i++) {
+			CommandDes cd = (CommandDes) WorkloadContext.get(command[i]);
 			List<String> slaves = Util.getSlavesHost();
 			for (String slave : slaves) {
-				int index = 0;
-				String split = (String) WorkloadContext.get(command[i]+".des.split");
-				List<List<Double>> totalData = readFile(slave + "_"+ command[i] +".dat",start,split);
-				String commandData = (String) WorkloadContext.get(command[i] + ".des.data");
-				String[] data = commandData.split("]");
-				// new chartSource and call ChartUtil
-				for(int j = 0; j < data.length; j++){
-					String[] line = data[j].substring(1).split(":");
-					if(line.length !=2){
-						System.out.println("Des file: Wrong format");
-						System.exit(1);
-					}
-					List<String> nameList = new ArrayList<String>();
-					String chartName = line[0].split(",")[0].toUpperCase();
-					String chartType = line[0].split(",")[1];
-					String[] itemName = line[1].split(",");
-					List<List<Double>> dataList = new ArrayList<List<Double>>();
-					for(int k = 0 ; k < itemName.length; k++){
-						nameList.add(itemName[k]);
-					}
-					for(int m = 0 ; m < totalData.size(); m++){
-						List<Double> row = new ArrayList<Double>();
-						for(int n=0 ; n < itemName.length;n++)
-							row.add(totalData.get(m).get(n+index));
-						dataList.add(row);
-					}
-					index += itemName.length;
-					String yAxisName = "";
-					if(chartType.equals("line")){
-						yAxisName = "BYTE";
-						ChartSource cs = new ChartSource(dataList,nameList,freq,chartName,"TIME(s)", yAxisName,jobMarker,stageMarker);
-						outputGraph(slave+"_"+command[i] +"_"+ cs.chartName,ChartUtil.lineChart(cs),width,height);
-					}
-					else if(chartType.equals("stack")){
-						yAxisName = "PERCENTAGE";
-						ChartSource cs = new ChartSource(dataList,nameList,freq,chartName,"TIME(s)", yAxisName,jobMarker,stageMarker);
-						outputGraph(slave+"_" + command[i] + "_"+cs.chartName,ChartUtil.stackChart(cs),width,height);
-					}
-					else {
-						System.out.println("WRONG CHART TYPE: " + chartType);
+				XChartPreprocessor xp = new XChartPreprocessor();
+				xp.setCSVFolder(csvFolder);
+				xp.setStartTime(jc.getStartTime());
+				List<Map<String, List<List<String>>>> dataList = xp
+						.getDataList(cd, slave);
+				for (int m = 0; m < cd.getChartDes().size(); m++) {
+					ChartDes chd = cd.getChartDes().get(m);
+					ChartSource cs = getChartSource(chd, cd, dataList);
+					if (chd.getChartType().equals(ChartType.line)) {
+						outputGraph(slave + "_" + command[i] + "_"
+								+ cs.chartName, ChartUtil.lineChart(cs), width,
+								height);
+					} else if (chd.getChartType().equals(ChartType.stack)) {
+						outputGraph(slave + "_" + command[i] + "_"
+								+ cs.chartName, ChartUtil.stackChart(cs),
+								width, height);
+					} else {
+						System.out.println("WRONG CHART TYPE: "
+								+ chd.getChartType());
 						System.exit(1);
 					}
 				}
 			}
-			
-		}	
+		}
 	}
-	
-	private List<List<Double>> readFile(String file, int start,String split) throws Exception{
-		FileReader fr = new FileReader(csvFolder + file);
-		BufferedReader br = new BufferedReader(fr);
-		List<List<Double>> data = new ArrayList<List<Double>>();
-		String line;
-		int i = 0; 
-		while(i < start){
-			br.readLine();
-			i++;
-		}
-		
-//		long time = (Long) WorkloadContext.get(Constants.WORKLOAD_RUNTIME) - startTime;
-//		//discard records preceding the start of job
-//		if(time < 0){
-//			long count = time / Integer.parseInt((WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)));
-//			i = 0;
-//			while( i < count){
-//				br.readLine();
-//				i++;
-//			}	
-//		}
-		while(true){
-			line = br.readLine();
-			//System.out.println(line);
-			if(line == null)
-				break;
-			StringTokenizer st = new StringTokenizer(line, split);
-			List<Double> record = new ArrayList<Double>();
-			while(st.hasMoreTokens()){
-				String token = st.nextToken().trim();
-				record.add(Double.parseDouble(token));
+
+	private ChartSource getChartSource(ChartDes chd, CommandDes cd,
+			List<Map<String, List<List<String>>>> dataList) throws Exception {
+		ChartSource cs = new ChartSource();
+		cs.setChartName(chd.getChartName());
+		cs.setFreq(freq);
+		cs.setMarker(jc.getMarker());
+		cs.setYAxisName(chd.getYName());
+		List<String> dataHead = null;
+		if (chd.getGroupName() == null) {
+			dataHead = cd.getGroupDes().get(0).getHeadDes();
+			List<List<Double>> data = getChartDataByRow(dataHead, dataList, chd);
+			cs.setDataList(data);
+			cs.setDataNameList(chd.getColName());
+			
+		} else {
+			// FIND GROUPHEAD BY GROUPBYNAME
+			List<GroupDes> groupDesList = cd.getGroupDes();
+			if (chd.getChartProcessType().equals(ChartProcessType.select)) {
+				for (int i = 0; i < groupDesList.size(); i++) {
+					if (chd.getGroupName().equals(
+							groupDesList.get(i).getGroupName())) {
+						dataHead = groupDesList.get(i).getHeadDes();
+						cs.setDataList(getChartDataByRow(dataHead, dataList,
+								chd));
+						cs.setDataNameList(chd.getColName());
+					}
+				}
+			} 
+			else if (chd.getChartProcessType().equals(ChartProcessType.aggregate)) {
+				for (int i = 0; i < groupDesList.size(); i++) {
+					if (chd.getGroupName()
+							.equals(groupDesList.get(i).getGroupName())) {
+						dataHead = groupDesList.get(i).getHeadDes();
+						cs.setDataList(getChartDataByCol(dataHead, dataList,
+								chd));
+						List<String> nameList = new ArrayList<String>();
+						for (int col = 0; col < dataHead.size(); col++) {
+							if (chd.getAggregateName().equals(dataHead.get(col))) {
+								List<List<String>> table = dataList.get(0).get(
+										chd.getGroupName());
+								for (int row = 0; row < table.size(); row++)
+									nameList.add(chd.getGroupName()
+											+ table.get(row).get(col));
+							}
+						}
+						cs.setDataNameList(nameList);
+					}
+				}
+			} 
+			else {
+				throw new Exception("Cannot handle processType: "
+						+ chd.getChartProcessType());
 			}
-			data.add(record);
+			if(dataHead == null){
+				throw new Exception("Cannot find group: " + chd.getGroupName());
+			}
 		}
-		br.close();
-		return data;
-	}	
+		return cs;
+	}
+
+	private List<List<Double>> getChartDataByCol(List<String> dataHead,
+			List<Map<String, List<List<String>>>> dataList, ChartDes chd) {
+		List<List<Double>> chartData = new ArrayList<List<Double>>();
+		for (int col = 0; col < dataHead.size(); col++) {
+			if (chd.getColName().get(0).equals(dataHead.get(col))) {
+				for (int num = 0; num < dataList.size(); num++) {
+					List<Double> record = new ArrayList<Double>();
+					for (int row = 0; row < dataList.get(num)
+							.get(chd.getGroupName()).size(); row++) {
+						String element = dataList.get(num)
+								.get(chd.getGroupName()).get(row).get(col);
+						record.add(Double.parseDouble(element));
+					}
+					chartData.add(record);
+				}
+				break;
+			}
+		}
+		return chartData;
+	}
+
+	private List<List<Double>> getChartDataByRow(List<String> dataHead,
+			List<Map<String, List<List<String>>>> dataList, ChartDes chd)
+			throws Exception {
+		List<List<Double>> chartData = new ArrayList<List<Double>>();
+		List<String> chartHead = chd.getColName();
+		String groupName = chd.getGroupName();
+		String selectName = chd.getSelectName();
+		String selectValue = chd.getSelectValue();
+		// Search selectValue and locate the row number
+		int rowIndex = 0;
+		if (selectValue != null) {
+			for (int col = 0; col < dataHead.size(); col++) {
+				if (selectName.equals(dataHead.get(col))) {
+					List<List<String>> table = dataList.get(0).get(groupName);
+					for (int row = 0; row < table.size(); row++) {
+						if (selectValue.equals(table.get(row).get(col)))
+							rowIndex = row;
+					}
+				}
+			}
+		}
+		for (int num = 0; num < dataList.size(); num++){
+			List<Double> record = new ArrayList<Double>();
+			for (int k = 0; k < chartHead.size(); k++){
+				for (int col = 0; col < dataHead.size(); col++){
+					if(chartHead.get(k).equals(dataHead.get(col))){
+						double element = Double.parseDouble(dataList.get(num).get(chd.getGroupName()+"").get(rowIndex).get(col));
+						record.add(element);
+					}
+				}
+			}
+			chartData.add(record);
+		}
+		return chartData;
+	}
+
+	@Override
+	public void setJobChart(JobChart jc) {
+		this.jc = jc;
+		try {
+			jc.setCsvFolder(csvFolder);
+			jc.setJpgFolder(jpgFolder);
+			jc.draw();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

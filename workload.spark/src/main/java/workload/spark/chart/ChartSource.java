@@ -4,25 +4,36 @@ import java.util.List;
 
 public class ChartSource {
 	List<List<Double>> dataList;
-	List<String> dataNameList;
+	List<String> dataNameList = null;
 	int freq;
 	String chartName = "";
-	String xAxisName = "Time(s)";
-	String yAxisName;
-	double[] jobMarker;
-	double[] stageMarker;
+	String xAxisName = "time(s)";
+	String yAxisName = "";
+	double[][] marker;
 	//long startTime;
 	
 	
-	public ChartSource(List<List<Double>>dataList,List<String> nameList,int freq,String chartName,String xAxisName,String yAxisName,double[] jobMarker,double[] stageMarker) {
+	
+	public void setDataList(List<List<Double>> dataList){
 		this.dataList = dataList;
-		this.dataNameList = nameList;
+	}
+	public void setDataNameList(List<String> dataNameList){
+		this.dataNameList = dataNameList;
+	}
+	public void setFreq(int freq){
 		this.freq = freq;
+	}
+	public void setChartName(String chartName){
 		this.chartName = chartName;
+	}
+	public void setXAxisName(String xAxisName){
 		this.xAxisName = xAxisName;
+	}
+	public void setYAxisName(String yAxisName){
 		this.yAxisName = yAxisName;
-		this.jobMarker = jobMarker;
-		this.stageMarker = stageMarker;
+	}
+	public void setMarker(double[][] marker){
+		this.marker = marker;
 	}
 
 }

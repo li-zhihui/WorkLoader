@@ -44,6 +44,7 @@ public class Util {
 				slaves.add(line);
 			}
 		}
+		br.close();
 		return slaves;
 	}
 
@@ -79,8 +80,11 @@ public class Util {
 	public static List<String> getList(String str,String split){
 		String[] items = str.split(split);
 		List<String> list = new ArrayList<String>();
-		for(int i=0;i<items.length; i++)
-			list.add(items[i]);
+		for(int i=0;i<items.length; i++){
+			if(!items[i].trim().equals(""))
+				list.add(items[i].trim());
+		}
+			
 		return list;
 	}
 }

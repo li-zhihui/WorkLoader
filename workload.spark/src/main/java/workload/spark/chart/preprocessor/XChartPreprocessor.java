@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import workload.spark.Constants;
 import workload.spark.Util;
 import workload.spark.des.CommandDes;
 import workload.spark.des.Regex;
@@ -15,14 +13,19 @@ import workload.spark.des.Regex;
 public class XChartPreprocessor{
 
 	/**
-	 * Read Log File and store it as 4-D list as required by the command des
+	 * Store data for each command as 4-D list
 	 */
 	String csvFolder;
+	long startTime;
+	List<Map<String,List<List<String>>>> dataList = new ArrayList<Map<String,List<List<String>>>>();
 	
 	public void setCSVFolder(String csvFolder){
 		this.csvFolder = csvFolder;
 	}
-	List<Map<String,List<List<String>>>> dataList = new ArrayList<Map<String,List<List<String>>>>();
+	
+	public void setStartTime(long startTime){
+		this.startTime = startTime;
+	}
 	
 	private void readFile(CommandDes des,String currentSlave) throws Exception{
 		System.out.println(csvFolder + currentSlave+"_" + des.getCommandName()+".dat");
@@ -34,8 +37,6 @@ public class XChartPreprocessor{
 			br.readLine();
 			i++;
 		}
-//		long startTime = JSTChart.getStartTime();
-		
 //		long time = (Long) WorkloadContext.get(Constants.WORKLOAD_RUNTIME) - startTime;
 //		//discard records preceding the start of job
 //		if(time < 0){
@@ -52,21 +53,21 @@ public class XChartPreprocessor{
 				Map<String,List<List<String>>> map = new HashMap<String,List<List<String>>>();
 				for(int m = 0; m < des.getGroupDes().size(); m++){
 					List<List<String>> groupTable = new ArrayList<List<String>>();
+					String split = des.getGroupDes().get(m).getSplit();
 					Regex regex = des.getGroupDes().get(m).getRegex();
 				  	String regexValue = des.getGroupDes().get(m).getRegexValue();
 				  	line = br.readLine();
 				  	if(checkRegex(line,regex,regexValue)){
 				  			line = br.readLine();
 				  			while(line != null&& !line.equals("") ){
-				  				//System.out.println("Valid Line:" + line);
-				  				List<String> record = Util.getList(line, Constants.DATA_SPLIT);
+				  				List<String> record = Util.getList(line, split);
 				  				line = br.readLine();
 				  				groupTable.add(record);
 				  			}
 				  	}
 				  	else{
-				  		System.out.println("Wrong Regex: " + regexValue);
-				  		return;
+				  		br.close();
+				  		throw new Exception("Wrong regex: " + regex);
 				  	}
 				  	map.put(des.getGroupDes().get(m).getGroupName(), groupTable);
 				}
@@ -75,55 +76,51 @@ public class XChartPreprocessor{
 			else if(des.getGroupDes().get(0).getGroupName().equals("null")){
 				Map<String,List<List<String>>> map = new HashMap<String,List<List<String>>>();
 				List<List<String>> table = new ArrayList<List<String>>();
-				List<String> record = Util.getList(line, Constants.DATA_SPLIT);
+				String split = des.getGroupDes().get(0).getSplit();
+				List<String> record = Util.getList(line, split);
 				table.add(record);
 				map.put("null",table);
 				line = br.readLine();
 				dataList.add(map);
 			}
 			else{
-				System.out.println("Cannot process the file format");
-				return;
+				br.close();
+				throw new Exception("Cannot process the file format");
 			}
-			if(line == null)
+			if(line == null){
+				br.close();
 				break;
+			}
+				
 		}
 		br.close();	
 	}
 	
 	private boolean checkRegex(String line, Regex regex, String regexValue) {
-		//System.out.println(regex);
-		if(line.indexOf(regexValue)!= -1)
+		if(regex.equals(Regex.indexOf) && line.indexOf(regexValue)!= -1)
 			return true;
 		else if(regex.equals(Regex.startWith)&&line.startsWith(regexValue))
 			return true;
 		return false;
 	}
 	
-	public  List<Map<String, List<List<String>>>> getDataList(CommandDes cd) throws Exception{
-//		String[] command = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND).split(Constants.DATA_SPLIT);
-//		for(int k = 0 ; k < command.length; k++){
-			//CommandDes cd = (CommandDes) WorkloadContext.get(command[k]);
-//			List<String> slaves = Util.getSlavesHost();
-//			for (String slave : slaves) {
-				readFile(cd, "sr479");
+	public  List<Map<String, List<List<String>>>> getDataList(CommandDes cd,String slave) throws Exception{
+				readFile(cd, slave);
 				System.out.println("dataList Size: " + dataList.size());
-				for(int i = 0; i < dataList.size(); i++){
-					Map<String,List<List<String>>> map = dataList.get(i);
-					for(int j = 0 ; j < cd.getGroupDes().size(); j++){
-						System.out.println("Group Name: " + cd.getGroupDes().get(j).getGroupName());
-						List<List<String>> table = map.get(cd.getGroupDes().get(j).getGroupName());
-						for(int m = 0; m < table.size(); m++){
-							List<String> record = table.get(m);
-							for(int n = 0 ; n < table.get(0).size(); n++)
-								System.out.print(record.get(n) + " ");
-							System.out.println();
-						}
-					}
-				}
-//			}
-//		}
-		return dataList;
+//				for(int i = 0; i < dataList.size(); i++){
+//					Map<String,List<List<String>>> map = dataList.get(i);
+//					for(int j = 0 ; j < cd.getGroupDes().size(); j++){
+//						System.out.println("Group Name: " + cd.getGroupDes().get(j).getGroupName());
+//						List<List<String>> table = map.get(cd.getGroupDes().get(j).getGroupName());
+//						for(int m = 0; m < table.size(); m++){
+//							List<String> record = table.get(m);
+//							for(int n = 0 ; n < table.get(0).size(); n++)
+//								System.out.print(record.get(n) + " ");
+//							System.out.println();
+//						}
+//					}
+//				}
+			return dataList;
 	}
 }
 

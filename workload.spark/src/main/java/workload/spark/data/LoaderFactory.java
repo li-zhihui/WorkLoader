@@ -1,7 +1,6 @@
 package workload.spark.data;
 
 import workload.spark.Constants;
-import workload.spark.Util;
 import workload.spark.WorkloadConf;
 
 public class LoaderFactory {

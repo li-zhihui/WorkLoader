@@ -11,11 +11,11 @@ workload.billboard.run=run.sh
 workload.output.path=/tmp/workload/
 workload.backup.path=/tmp/
 
-workload.step.runner=emptyRunner
-workload.step.parser=emptyParser
-workload.step.loader=emptyLoader
-workload.step.cleaner=emptyCleaner
-workload.step.chart=emptyChart
+workload.step.runner=XRunner
+workload.step.parser=XParser
+workload.step.loader=XLoader
+workload.step.cleaner=XCleaner
+workload.step.chart=XChart
 workload.execute.backup=false
 workload.step.report=false
 
@@ -23,4 +23,8 @@ workload.log=true
 
 workload.runner.command=iostat,vmstat
 #second in unit
+workload.runner.sleeptime=40
 workload.runner.frequency=2
+workload.chart.xmax = 300
+workload.chart.width = 800
+workload.chart.height = 300

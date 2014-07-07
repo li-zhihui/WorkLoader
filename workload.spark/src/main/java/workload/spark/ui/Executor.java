@@ -1,11 +1,6 @@
 package workload.spark.ui;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
-
 import workload.spark.Constants;
 import workload.spark.Util;
 import workload.spark.WorkloadConf;

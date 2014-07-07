@@ -11,7 +11,7 @@ public class XRunnerTest extends BaseTestCase {
 		setUp();
 		XRunner runner = new XRunner();
 		runner.run();
-		//runner.testCommand();
+		runner.testCommand();
 	}
 
 }

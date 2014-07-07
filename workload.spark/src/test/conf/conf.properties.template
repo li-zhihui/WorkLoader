@@ -20,7 +20,7 @@ workload.execute.backup=false
 workload.step.report=false
 workload.log=true
 
-workload.runner.command=iostat,sar
+workload.runner.command=sar
 #second in unit
 workload.runner.sleeptime=40
 workload.runner.frequency=2

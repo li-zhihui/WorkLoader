@@ -10,31 +10,34 @@ import org.jfree.chart.JFreeChart;
 
 import workload.spark.Constants;
 
-public class JSTChart extends SparkChart{
+public class JSTChart extends SparkChart implements JobChart {
 	/***
-	 * generate job,stage,task graph and set job and stage bound as a double array
+	 * generate job,stage,task graph and fill the marker array
 	 */
 	List<List<Double>> jobData;
 	List<List<Double>> stageData;
 	List<List<Double>> taskData;
-	static double[] jobMarker = null;
-	static double[] stageMarker = null;
+//	double[] jobMarker = null;
+//	double[] stageMarker = null;
+	//FIXME Marker CAN BE CONFIGURED
+	double[][] marker = new double[5][];
 	static Long startTime;
-	
-	
-	public double[] findTimeEnd(List<List<Double>> list){
+
+	public double[] findTimeEnd(List<List<Double>> list) {
 		int n = list.get(0).size();
 		double[] timeend = new double[n];
-		for (int i = 0; i < n ; i++){
-				StringTokenizer st = new StringTokenizer(list.get(2).get(i).toString(),".");
-				String end = st.nextToken();
-				timeend[i] = (Long.parseLong(end)/1000);
+		for (int i = 0; i < n; i++) {
+			StringTokenizer st = new StringTokenizer(list.get(2).get(i)
+					.toString(), ".");
+			String end = st.nextToken();
+			timeend[i] = (Long.parseLong(end) / 1000);
 		}
 		return timeend;
 	}
-	
-	public List<List<Double>> loadJSTCSV(String name,int sortCriteria) throws Exception{
-		//sortCSVFile(name,sortCriteria);
+
+	public List<List<Double>> loadJSTCSV(String name, int sortCriteria)
+			throws Exception {
+		// sortCSVFile(name,sortCriteria);
 		FileReader fr = new FileReader(csvFolder + name + Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
 		List<List<Double>> tempData = new ArrayList<List<Double>>(3);
@@ -72,19 +75,20 @@ public class JSTChart extends SparkChart{
 		tempData.add(endList);
 		return tempData;
 	}
-	
+
 	public long setStartTime() throws Exception {
-		//sortCSVFile(Constants.JOB_NAME, 2);
-		FileReader fr = new FileReader(csvFolder + Constants.JOB_NAME + Constants.CSV_SUFFIX);
+		// sortCSVFile(Constants.JOB_NAME, 2);
+		FileReader fr = new FileReader(csvFolder + Constants.JOB_NAME
+				+ Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
 		String line = br.readLine();
 		while (line == "") {
 			line = br.readLine();
 			if (line == null) {
+				br.close();
 				throw new Exception("nothing in job.csv.");
 			}
 		}
-		br.close();
 		StringTokenizer st = new StringTokenizer(line, Constants.DATA_SPLIT);
 		st.nextToken();
 		String start = st.nextToken();
@@ -92,41 +96,59 @@ public class JSTChart extends SparkChart{
 		return Long.parseLong(start.trim());
 	}
 
-//	 * sort filename.csv according to the column indexed at sortCriteria
-//	 * 
-//	 * @param filename
-//	 * @param sortCriteria
-//	 * @throws Exception
-//	 */
-//	public void sortCSVFile(String filename, int sortCriteria) throws Exception {
-//		String taskSort = "sort -t \",\" -g -k " + Integer.toString(sortCriteria) + 
-//				" " + csvFolder + filename + Constants.CSV_SUFFIX + 
-//				" > " + csvFolder + "sorttmp" + Constants.CSV_SUFFIX;
-//		Util.runCmd(taskSort);
-//		String taskCp = "/bin/cp " + csvFolder + "sorttmp" + Constants.CSV_SUFFIX
-//				+ " " + csvFolder + filename + Constants.CSV_SUFFIX;
-//		Util.runCmd(taskCp);
-//	}
-	public static long getStartTime(){
-		return startTime;
+	public ChartSource getChartSource(List<List<Double>> data, int freq,
+			String chartName, String yAxisName, String xAxisName,
+			double[][] marker) {
+		ChartSource cs = new ChartSource();
+		cs.setChartName(chartName);
+		cs.setDataList(data);
+		cs.setYAxisName(yAxisName);
+		cs.setXAxisName(xAxisName);
+		cs.setMarker(marker);
+		return cs;
 	}
-	
-	public void getChartBound() throws Exception{
-		startTime = setStartTime();
-		jobData = loadJSTCSV(Constants.JOB_NAME,2);
-		stageData = loadJSTCSV(Constants.STAGE_NAME,3);
-		taskData = loadJSTCSV(Constants.TASK_NAME,4);
-		jobMarker = findTimeEnd(jobData);
-		stageMarker = findTimeEnd(stageData);
-		JFreeChart chart = ChartUtil.ganttaChart(new ChartSource(jobData, null,freq,Constants.JOB_NAME.toUpperCase()+"-TIME",Constants.JOB_NAME.toUpperCase(), "TIME(s)",jobMarker, stageMarker));
-		outputGraph(Constants.JOB_NAME,chart,width,height);
-		chart = ChartUtil.ganttaChart(new ChartSource(stageData, null,freq,Constants.STAGE_NAME.toUpperCase()+"-TIME",Constants.STAGE_NAME.toUpperCase(),"TIME(s)",jobMarker, stageMarker));
-		outputGraph(Constants.STAGE_NAME,chart,width,height);
-		chart = ChartUtil.ganttaChart(new ChartSource(taskData, null,freq,Constants.TASK_NAME.toUpperCase()+"-TIME",Constants.TASK_NAME.toUpperCase(),"TIME(s)",jobMarker, stageMarker));
-		outputGraph(Constants.TASK_NAME,chart,width,height);
-	}
+
 	@Override
 	public void createChart() throws Exception {
-		
+
+	}
+
+	@Override
+	public Long getStartTime() {
+		return startTime;
+	}
+
+	@Override
+	public void draw() {
+		for(int i=0; i<marker.length; i++)
+			marker[i] = null;
+		try {
+			startTime = setStartTime();
+			jobData = loadJSTCSV(Constants.JOB_NAME, 2);
+			stageData = loadJSTCSV(Constants.STAGE_NAME, 3);
+			taskData = loadJSTCSV(Constants.TASK_NAME, 4);
+			marker[0] = findTimeEnd(jobData);
+			marker[1] = findTimeEnd(stageData);
+			JFreeChart chart = ChartUtil.ganttaChart(getChartSource(jobData, freq,
+					Constants.JOB_NAME.toUpperCase() + "-TIME", "Time(s)",
+					Constants.JOB_NAME.toUpperCase(), marker));
+			outputGraph(Constants.JOB_NAME, chart, width, height);
+			chart = ChartUtil.ganttaChart(getChartSource(stageData, freq,
+					Constants.STAGE_NAME.toUpperCase() + "-TIME", "Time(s)",
+					Constants.STAGE_NAME.toUpperCase(), marker));
+			outputGraph(Constants.STAGE_NAME, chart, width, height);
+			chart = ChartUtil.ganttaChart(getChartSource(taskData, freq,
+					Constants.TASK_NAME.toUpperCase() + "-TIME", "Time(s)",
+					Constants.TASK_NAME.toUpperCase(), marker));
+			outputGraph(Constants.TASK_NAME, chart, width, height);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	//0-jobmarker;1-stagemarker
+	public double[][] getMarker() {
+		return marker;
 	}
 }

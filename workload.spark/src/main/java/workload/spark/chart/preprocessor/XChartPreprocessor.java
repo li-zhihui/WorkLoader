@@ -6,7 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import workload.spark.Constants;
 import workload.spark.Util;
+import workload.spark.WorkloadConf;
+import workload.spark.WorkloadContext;
 import workload.spark.des.CommandDes;
 import workload.spark.des.Regex;
 
@@ -17,6 +21,7 @@ public class XChartPreprocessor{
 	 */
 	String csvFolder;
 	long startTime;
+	long remainder;
 	List<Map<String,List<List<String>>>> dataList = new ArrayList<Map<String,List<List<String>>>>();
 	
 	public void setCSVFolder(String csvFolder){
@@ -25,6 +30,9 @@ public class XChartPreprocessor{
 	
 	public void setStartTime(long startTime){
 		this.startTime = startTime;
+	}
+	public long getRemainder(){
+		return remainder;
 	}
 	
 	private void readFile(CommandDes des,String currentSlave) throws Exception{
@@ -37,17 +45,24 @@ public class XChartPreprocessor{
 			br.readLine();
 			i++;
 		}
-//		long time = (Long) WorkloadContext.get(Constants.WORKLOAD_RUNTIME) - startTime;
-//		//discard records preceding the start of job
-//		if(time < 0){
-//			long count = time / Integer.parseInt((WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)));
-//			i = 0;
-//			while( i < count){
-//				br.readLine();
-//				i++;
-//			}	
-//		}
+		long time = (startTime - (Long)WorkloadContext.get(Constants.WORKLOAD_RUNTIME))/1000;
+		System.out.println("JOB START AT: " + startTime);
+		//discard records preceding the start of job
+		if(time > 0){
+			long num = time / Integer.parseInt((WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)));
+			remainder = time%Integer.parseInt((WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)));
+			long count = 0;
+			for(int n=0;n<des.getGroupDes().size();n++)
+				count +=des.getGroupDes().get(n).getCount();
+			System.out.println("Discard "+ num +"records\t"+count*num + "lines\t" + remainder);
+			i = 0;
+			while( i < count*num){
+				br.readLine();
+				i++;
+			}	
+		}
 		line = br.readLine();
+		//System.out.println("FIRST LINE: " + line);
 		while(true){
 			if(line.equals("")){
 				Map<String,List<List<String>>> map = new HashMap<String,List<List<String>>>();
@@ -57,9 +72,13 @@ public class XChartPreprocessor{
 					Regex regex = des.getGroupDes().get(m).getRegex();
 				  	String regexValue = des.getGroupDes().get(m).getRegexValue();
 				  	line = br.readLine();
+//				  	System.out.println("REGEX LINE: "+line);
+				  	if(line == null){
+				  		break;
+				  	}
 				  	if(checkRegex(line,regex,regexValue)){
 				  			line = br.readLine();
-				  			while(line != null&& !line.equals("") ){
+				  			while(line != null && !line.equals("") ){
 				  				List<String> record = Util.getList(line, split);
 				  				line = br.readLine();
 				  				groupTable.add(record);
@@ -67,11 +86,12 @@ public class XChartPreprocessor{
 				  	}
 				  	else{
 				  		br.close();
-				  		throw new Exception("Wrong regex: " + regex);
+				  		throw new Exception("Wrong regex: " + regex + "----" +  line);
 				  	}
 				  	map.put(des.getGroupDes().get(m).getGroupName(), groupTable);
 				}
-				dataList.add(map);
+				if(line != null)
+					dataList.add(map);
 			}
 			else if(des.getGroupDes().get(0).getGroupName().equals("null")){
 				Map<String,List<List<String>>> map = new HashMap<String,List<List<String>>>();
@@ -90,8 +110,7 @@ public class XChartPreprocessor{
 			if(line == null){
 				br.close();
 				break;
-			}
-				
+			}	
 		}
 		br.close();	
 	}

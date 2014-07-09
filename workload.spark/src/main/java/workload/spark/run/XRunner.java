@@ -26,8 +26,10 @@ public class XRunner extends Runner {
 	 * @throws Exception 
 	 */
 	private void  prepareDRunSh() throws Exception{
-		BufferedWriter br = new BufferedWriter(new FileWriter(new File(WorkloadConf.get(Constants.WORKLOAD_WORKDIR)
-				+ "/drun_wl.sh ")));
+		File shell = new File(WorkloadConf.get(Constants.WORKLOAD_WORKDIR)
+				+ "/drun_wl.sh");
+		shell.setExecutable(true);
+		BufferedWriter br = new BufferedWriter(new FileWriter(shell));
 		String str = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND);
 		String []command =  str.split(Constants.DATA_SPLIT);
 		if(command.length == 1 && command[0].equals("")){
@@ -35,7 +37,8 @@ public class XRunner extends Runner {
 			throw new Exception("NO COMMAND CONFIGURED");
 		}
 		else{
-			Properties des = Util.buildProperties(WorkloadConf.get(Constants.WORKLOAD_WORKDIR) + "conf/runner.des");
+			//System.out.println(WorkloadConf.get(Constants.WORKLOAD_WORKDIR) + "runner.des");
+			Properties des = Util.buildProperties(WorkloadConf.get(Constants.WORKLOAD_WORKDIR) + "/runner.des");
 			StringBuffer sb = new StringBuffer("");
 			List<String> slaves = Util.getSlavesHost();
 			sb.append("#!/bin/bash\n\n");
@@ -50,11 +53,14 @@ public class XRunner extends Runner {
 			sb.append("for worker in ${TARGET[@]}\n"+ "do\n");
 			for(int i = 0; i < command.length; i++){
 				//FIXME Any better solution to output dstat
-				if(command[i].equals(Constants.DSTAT_COMMAND))
-					sb.append(des.getProperty(command[i]+".command") + " ${worker}_" + command[i] + ".dat " + WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)
+				if(command[i].equals(Constants.DSTAT_COMMAND)){
+					sb.append("ssh $worker rm -f ./${worker}_dstat.dat\n");//
+					sb.append("ssh $worker " + des.getProperty(command[i]+".command") + " ${worker}_" + command[i] + ".dat " + WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)
 							+ " > " + "/dev/null &\n");
+				}
+					
 				else{
-					sb.append(des.getProperty(command[i]+".command") + " " + WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)
+					sb.append("ssh $worker "+ des.getProperty(command[i]+".command") + " " + WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)
 							+ " > " + "${worker}_" + command[i] + ".dat &\n");
 				}
 				//READ DES FILE AND WRAP INTO COMMANDDES OBJECT
@@ -67,8 +73,10 @@ public class XRunner extends Runner {
 				if(groupContent.equals("null")){
 					GroupDes gd = new GroupDes();
 					gd.setGroupName("null");
+					//System.out.println(des.getProperty(command[i]+".datagroup.head"));
 					List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup.head"),",");
 					gd.setHeadDes(headDes);
+					gd.setCount(Integer.parseInt(des.getProperty(command[i]+".datagroup.count")));
 					gd.setSplit(des.getProperty(command[i]+".datagroup.split"));
 					groupDeses.add(gd);
 				}
@@ -80,6 +88,7 @@ public class XRunner extends Runner {
 						List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".head"),Constants.DATA_SPLIT);
 						gd.setHeadDes(headDes);
 						gd.setSplit(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".split"));
+						gd.setCount(Integer.parseInt(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".count")));
 						groupDeses.add(gd);
 					}
 				}
@@ -132,6 +141,7 @@ public class XRunner extends Runner {
 				WorkloadContext.put(command[i],cd);
 			}
 			sb.append("done\n");
+			
 			String workloadConfRun = Constants.WORKLOAD_CONF_PREFIX + "."
 					+ WorkloadConf.get(Constants.WORKLOAD_NAME) + "."
 					+ Constants.WORKLOAD_RUN_SUFFIX;
@@ -146,6 +156,15 @@ public class XRunner extends Runner {
 						+ " | grep -v \"grep\" | awk '{print $2}' | xargs ssh $worker kill -9\n");
 			}
 			sb.append("done\n");
+			for(int i=0; i<command.length; i++){
+				//FIXME DSTAT DAT HAS to scp from slaves
+				if(command[i].equalsIgnoreCase(Constants.DSTAT_COMMAND)){
+					sb.append("for worker in ${TARGET[@]}\n"+"do\n");
+					sb.append("scp ${worker}:./"+ "${worker}_dstat.dat " + Util.getWorkloadPath() + "\n");
+					sb.append("done\n");
+					break;
+				}
+			}
 			br.write(sb.toString());
 		}	
 		br.close();
@@ -210,20 +229,21 @@ public class XRunner extends Runner {
 				System.out.println("Group Split: " + gds.get(j).getSplit());
 				System.out.print("Group Head: " );
 				printList(gds.get(j).getHeadDes());
+				System.out.println("Group Count: "+gds.get(j).getCount());
 			}
-			System.out.println("Chart Deses");
-			for(int j=0; j < cds.size(); j++){
-				System.out.println("ChartName: " + cds.get(j).getChartName());
-				System.out.println("YName: " + cds.get(j).getYName());
-				System.out.println("GroupName: " + cds.get(j).getGroupName());
-				System.out.println("ProcessType : " + cds.get(j).getChartProcessType());
-				System.out.println("Select Name: " + cds.get(j).getSelectName());
-				System.out.println("Select Value: " + cds.get(j).getSelectValue());
-				System.out.println("ChartType: " + cds.get(j).getChartType());
-				System.out.println("GroupColName: " );
-				System.out.println("AggregateName: " + cds.get(j).getAggregateName());
-				printList(cds.get(j).getColName());
-			}
+//			System.out.println("Chart Deses");
+//			for(int j=0; j < cds.size(); j++){
+//				System.out.println("ChartName: " + cds.get(j).getChartName());
+//				System.out.println("YName: " + cds.get(j).getYName());
+//				System.out.println("GroupName: " + cds.get(j).getGroupName());
+//				System.out.println("ProcessType : " + cds.get(j).getChartProcessType());
+//				System.out.println("Select Name: " + cds.get(j).getSelectName());
+//				System.out.println("Select Value: " + cds.get(j).getSelectValue());
+//				System.out.println("ChartType: " + cds.get(j).getChartType());
+//				System.out.println("GroupColName: " );
+//				System.out.println("AggregateName: " + cds.get(j).getAggregateName());
+//				printList(cds.get(j).getColName());
+//			}
 		}
 	}
 	
@@ -238,14 +258,17 @@ public class XRunner extends Runner {
 	public void run() throws Exception {
 		prepareDRunSh();
 		copyDRun2WorkloadPath();
-		String runsh = Util.getWorkloadPath() + "drun_wl.sh ";
+		String runsh = Util.getWorkloadPath() + "drun_wl.sh";
 		Runtime runtime = Runtime.getRuntime();
 		String[] runCmd = { "/bin/sh", "-c", runsh };
-		System.out.println(runsh);
+		//System.out.println("RUN: " + runsh);
+		System.out.println("START MONITORING AT: " + (long)System.currentTimeMillis());
+		WorkloadContext.put(Constants.WORKLOAD_RUNTIME, (long)System.currentTimeMillis());
 		if (runtime.exec(runCmd, null, new File(Util.getWorkloadPath())).waitFor() != 0) {
 			throw new Exception("drun failed.");
 		}
-		//FIXME record the start time??
-		WorkloadContext.put(Constants.WORKLOAD_RUNTIME, System.currentTimeMillis());
+		//record the tool run time
+		
+		
 	}
 }

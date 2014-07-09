@@ -26,11 +26,9 @@ public class Executor {
 		WorkloadConf.set(p);
 		Init.init();
 		RunnerFactory.getRunner().run();
-		
 		LogParserFactory.getLogParser().parse();
 		LoaderFactory.getLoader().loadData();
 		CleanerFactory.getCleaner().clean();
-		//ChartPreprocesserreturn 4-dimension lmll
 		ChartFactory.getChart().createChart();
 		ReportFactory.getReport();
 		Backup.backup();

@@ -20,7 +20,6 @@ public class XChart extends SparkChart implements SystemChart {
 
 	@Override
 	public void createChart() throws Exception {
-		// GENERATE JOB/STAGE/TASK GRAPH AND MAKE JON AND STAGE MARKER AVAILABLE
 		String[] command = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND)
 				.split(Constants.DATA_SPLIT);
 		for (int i = 0; i < command.length; i++) {
@@ -35,6 +34,7 @@ public class XChart extends SparkChart implements SystemChart {
 				for (int m = 0; m < cd.getChartDes().size(); m++) {
 					ChartDes chd = cd.getChartDes().get(m);
 					ChartSource cs = getChartSource(chd, cd, dataList);
+					cs.setRemainder(xp.getRemainder());
 					if (chd.getChartType().equals(ChartType.line)) {
 						outputGraph(slave + "_" + command[i] + "_"
 								+ cs.chartName, ChartUtil.lineChart(cs), width,
@@ -160,6 +160,9 @@ public class XChart extends SparkChart implements SystemChart {
 			for (int k = 0; k < chartHead.size(); k++){
 				for (int col = 0; col < dataHead.size(); col++){
 					if(chartHead.get(k).equals(dataHead.get(col))){
+						if(dataList.get(num).get(chd.getGroupName()+"") == null){
+							System.out.println(num + "HEHE");
+						}
 						double element = Double.parseDouble(dataList.get(num).get(chd.getGroupName()+"").get(rowIndex).get(col));
 						record.add(element);
 					}

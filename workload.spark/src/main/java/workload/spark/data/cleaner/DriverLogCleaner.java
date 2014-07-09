@@ -16,7 +16,7 @@ public class DriverLogCleaner extends Cleaner {
 	public void clean() throws Exception {
 		this.cleaner.clean();
 
-		String[] csvFiles = { "job", "stage", "task", "*rddmem" };
+		String[] csvFiles = { "job", "stage", "task"};
 		Runtime runtime = Runtime.getRuntime();
 		for (String csvFile : csvFiles) {
 			String cp = "/bin/cp " + Constants.DRIVER_CSV_PAHT + "/" + csvFile

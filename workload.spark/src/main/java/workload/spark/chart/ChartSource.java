@@ -10,6 +10,7 @@ public class ChartSource {
 	String xAxisName = "time(s)";
 	String yAxisName = "";
 	double[][] marker;
+	long remainder;
 	//long startTime;
 	
 	
@@ -34,6 +35,9 @@ public class ChartSource {
 	}
 	public void setMarker(double[][] marker){
 		this.marker = marker;
+	}
+	public void setRemainder(long remainder){
+		this.remainder = remainder;
 	}
 
 }

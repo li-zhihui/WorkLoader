@@ -9,6 +9,7 @@ import java.util.StringTokenizer;
 import org.jfree.chart.JFreeChart;
 
 import workload.spark.Constants;
+import workload.spark.Util;
 
 public class JSTChart extends SparkChart implements JobChart {
 	/***
@@ -37,7 +38,7 @@ public class JSTChart extends SparkChart implements JobChart {
 
 	public List<List<Double>> loadJSTCSV(String name, int sortCriteria)
 			throws Exception {
-		// sortCSVFile(name,sortCriteria);
+		sortCSVFile(name,sortCriteria);
 		FileReader fr = new FileReader(csvFolder + name + Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
 		List<List<Double>> tempData = new ArrayList<List<Double>>(3);
@@ -77,7 +78,7 @@ public class JSTChart extends SparkChart implements JobChart {
 	}
 
 	public long setStartTime() throws Exception {
-		// sortCSVFile(Constants.JOB_NAME, 2);
+		sortCSVFile(Constants.JOB_NAME, 2);
 		FileReader fr = new FileReader(csvFolder + Constants.JOB_NAME
 				+ Constants.CSV_SUFFIX);
 		BufferedReader br = new BufferedReader(fr);
@@ -130,20 +131,37 @@ public class JSTChart extends SparkChart implements JobChart {
 			marker[0] = findTimeEnd(jobData);
 			marker[1] = findTimeEnd(stageData);
 			JFreeChart chart = ChartUtil.ganttaChart(getChartSource(jobData, freq,
-					Constants.JOB_NAME.toUpperCase() + "-TIME", "Time(s)",
+					Constants.JOB_NAME.toUpperCase() + "-TIME", "time(s)",
 					Constants.JOB_NAME.toUpperCase(), marker));
 			outputGraph(Constants.JOB_NAME, chart, width, height);
 			chart = ChartUtil.ganttaChart(getChartSource(stageData, freq,
-					Constants.STAGE_NAME.toUpperCase() + "-TIME", "Time(s)",
+					Constants.STAGE_NAME.toUpperCase() + "-TIME", "time(s)",
 					Constants.STAGE_NAME.toUpperCase(), marker));
 			outputGraph(Constants.STAGE_NAME, chart, width, height);
 			chart = ChartUtil.ganttaChart(getChartSource(taskData, freq,
-					Constants.TASK_NAME.toUpperCase() + "-TIME", "Time(s)",
+					Constants.TASK_NAME.toUpperCase() + "-TIME", "time(s)",
 					Constants.TASK_NAME.toUpperCase(), marker));
 			outputGraph(Constants.TASK_NAME, chart, width, height);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+//	 * sort filename.csv according to the column indexed at sortCriteria
+//	 * 
+//	 * @param filename
+//	 * @param sortCriteria
+//	 * @throws Exception
+//	 */
+	public void sortCSVFile(String filename, int sortCriteria) throws Exception {
+		String taskSort = "sort -t \",\" -g -k " + Integer.toString(sortCriteria) + 
+				" " + csvFolder + filename + Constants.CSV_SUFFIX + 
+				" > " + csvFolder + "sorttmp" + Constants.CSV_SUFFIX;
+		Util.runCmd(taskSort);
+		String taskCp = "/bin/cp " + csvFolder + "sorttmp" + Constants.CSV_SUFFIX
+				+ " " + csvFolder + filename + Constants.CSV_SUFFIX;
+		Util.runCmd(taskCp);
 	}
 
 	@Override

@@ -5,12 +5,11 @@ import workload.spark.WorkloadConf;
 
 public class CleanerFactory {
 	public static Cleaner getCleaner() {
-		if (WorkloadConf.get(Constants.WORKLOAD_STEP_CLEANER).equals("emptyCleaner")) {
-			return new EmptyCleaner();
-		}
-		else if(WorkloadConf.get(Constants.WORKLOAD_STEP_CLEANER).equals("linuxCleaner"))
+		if(WorkloadConf.get(Constants.WORKLOAD_STEP_CLEANER).equals("linuxCleaner"))
 			return new DstatCleaner(new DriverLogCleaner(new EmptyCleaner()));
-		else 
+		else if(WorkloadConf.get(Constants.WORKLOAD_STEP_CLEANER).equals("XCleaner"))
 			return new XCleaner(new DriverLogCleaner(new EmptyCleaner()));
+		else
+			return new EmptyCleaner();
 	}
 }

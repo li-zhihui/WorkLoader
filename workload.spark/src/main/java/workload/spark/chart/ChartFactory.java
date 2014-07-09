@@ -14,12 +14,6 @@ public class ChartFactory {
 		xc.setCsvFolder(WorkloadConf.get(Constants.WORKLOAD_OUTPUT_PATH));
 		xc.setJpgFolder(WorkloadConf.get(Constants.WORKLOAD_OUTPUT_PATH));
 		xc.setJobChart(jc);
-		try {
-			xc.createChart();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		return xc;
 	}
 }

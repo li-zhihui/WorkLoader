@@ -12,7 +12,7 @@ public class LogParserFactory {
 		else if(WorkloadConf.get(Constants.WORKLOAD_STEP_PARSER).equals("linuxParser"))
 			return new DriverLogParser();
 		else
-		return new EmptyLogParser();
+			return new EmptyLogParser();
 	}
 
 }

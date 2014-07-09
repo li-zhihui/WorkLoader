@@ -84,7 +84,7 @@ public class ChartUtil {
 
 	public static JFreeChart stackChart(ChartSource cs) {
 		DefaultTableXYDataset dataset = createXYDataset(cs);
-		JFreeChart chart = ChartFactory.createStackedXYAreaChart(cs.chartName.toUpperCase() + " UTILIAZATION", cs.xAxisName, cs.yAxisName, 
+		JFreeChart chart = ChartFactory.createStackedXYAreaChart(cs.chartName.toUpperCase() + " UTILIZATION", cs.xAxisName, cs.yAxisName, 
 				dataset,PlotOrientation.VERTICAL,true,false, false);
 		chart.setBackgroundPaint(Color.white);
 		XYPlot plot = (XYPlot) chart.getPlot();
@@ -168,7 +168,7 @@ public class ChartUtil {
 		for(int i=0; i < cs.dataList.get(0).size();i++){
 			XYSeries s = new XYSeries(cs.dataNameList.get(i),true,false);
 			for(int j = 0 ; j < cs.dataList.size();j++){
-				s.add(j*cs.freq,cs.dataList.get(j).get(i));
+				s.add(j*cs.freq+cs.remainder,cs.dataList.get(j).get(i));
 			}
 			dataset.addSeries(s);
 		}

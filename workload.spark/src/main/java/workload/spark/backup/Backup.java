@@ -15,7 +15,7 @@ public class Backup {
 				+ System.currentTimeMillis() + "/";
 		String backupPath = WorkloadConf.get(Constants.WORKLOAD_BACKUP_PATH)
 				+ backupName;
-		String webPath = "../workload.web/file/";
+		String webPath = "../workload.web/src/main/webapp/LogPic";
 		run.exec("mkdir " + backupPath).waitFor();
 		run.exec("mkdir" + webPath).waitFor();
 		String cmdS = "/bin/mv "

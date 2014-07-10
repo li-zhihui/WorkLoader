@@ -1,7 +1,38 @@
-<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+  <display-name></display-name>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <servlet>
+  	<servlet-name>ShowAllWorkLoadServlet</servlet-name>
+  	<servlet-class>workload.web.ShowAllWorkLoadServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>ShowAllWorkLoadServlet</servlet-name>
+    <url-pattern>ShowAllWorkLoadServlet</url-pattern>
+  </servlet-mapping>
 
-<web-app>
-  <display-name>Archetype Created Web Application</display-name>
+  <servlet>
+  	<servlet-name>showProcessServlet</servlet-name>
+  	<servlet-class>workload.web.processServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>showProcessServlet</servlet-name>
+    <url-pattern>showProcessServlet</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>showlinkpicServlet</servlet-name>
+  	<servlet-class>workload.web.showlinkpicServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>showlinkpicServlet</servlet-name>
+    <url-pattern>showlinkpicServlet</url-pattern>
+  </servlet-mapping>
+  
 </web-app>

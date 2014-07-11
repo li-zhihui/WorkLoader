@@ -11,6 +11,7 @@
 	<module>workload.driverlog</module>	
 	<module>workload.spark</module>
 	<module>workload.web</module>
+        <module>workload.webui</module>
 	</modules>
 	<dependencies>
 		<dependency>

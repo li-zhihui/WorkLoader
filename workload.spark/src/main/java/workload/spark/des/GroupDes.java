@@ -8,7 +8,6 @@ public class GroupDes {
 	Regex regex = null;
 	String regexValue = null;
 	List<String> headDes = new ArrayList<String>();
-	int count = 1;
 	String split;
 
 	public void setGroupName(String groupName){
@@ -26,9 +25,6 @@ public class GroupDes {
 	public void setSplit(String split){
 		this.split = split;
 	}
-	public void setCount(int count){
-		this.count = count;
-	}
 	public String getGroupName(){
 		return groupName;
 	}
@@ -43,8 +39,5 @@ public class GroupDes {
 	}
 	public String getSplit(){
 		return split;
-	}
-	public int getCount(){
-		return count;
 	}
 }

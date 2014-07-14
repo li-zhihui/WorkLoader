@@ -76,7 +76,6 @@ public class XRunner extends Runner {
 					//System.out.println(des.getProperty(command[i]+".datagroup.head"));
 					List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup.head"),",");
 					gd.setHeadDes(headDes);
-					gd.setCount(Integer.parseInt(des.getProperty(command[i]+".datagroup.count")));
 					gd.setSplit(des.getProperty(command[i]+".datagroup.split"));
 					groupDeses.add(gd);
 				}
@@ -88,7 +87,6 @@ public class XRunner extends Runner {
 						List<String> headDes = Util.getList(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".head"),Constants.DATA_SPLIT);
 						gd.setHeadDes(headDes);
 						gd.setSplit(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".split"));
-						gd.setCount(Integer.parseInt(des.getProperty(command[i]+".datagroup."+gd.getGroupName()+".count")));
 						groupDeses.add(gd);
 					}
 				}
@@ -213,24 +211,23 @@ public class XRunner extends Runner {
 		}
 	}
 	
-	public void testCommand(){
-		String[] command = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND).split(Constants.DATA_SPLIT);
-		for(int i = 0; i < command.length; i++){
-			CommandDes cd = (CommandDes) WorkloadContext.get(command[i]);
-			System.out.println("Command Name: "+cd.getCommandName());
-			System.out.println("startSkip: " + cd.getStartSkip());
-			List<GroupDes> gds = cd.getGroupDes();
-			List<ChartDes> cds = cd.getChartDes();
-			System.out.println("Group Deses");
-			for(int j = 0 ; j < gds.size(); j++){
-				System.out.println("Group Name: " + gds.get(j).getGroupName());
-				System.out.println("Regex: " + gds.get(j).getRegex());
-				System.out.println("Regex Value: " + gds.get(j).getRegexValue());
-				System.out.println("Group Split: " + gds.get(j).getSplit());
-				System.out.print("Group Head: " );
-				printList(gds.get(j).getHeadDes());
-				System.out.println("Group Count: "+gds.get(j).getCount());
-			}
+//	public void testCommand(){
+//		String[] command = WorkloadConf.get(Constants.WORKLOAD_RUNNER_COMMAND).split(Constants.DATA_SPLIT);
+//		for(int i = 0; i < command.length; i++){
+//			CommandDes cd = (CommandDes) WorkloadContext.get(command[i]);
+//			System.out.println("Command Name: "+cd.getCommandName());
+//			System.out.println("startSkip: " + cd.getStartSkip());
+//			List<GroupDes> gds = cd.getGroupDes();
+//			List<ChartDes> cds = cd.getChartDes();
+//			System.out.println("Group Deses");
+//			for(int j = 0 ; j < gds.size(); j++){
+//				System.out.println("Group Name: " + gds.get(j).getGroupName());
+//				System.out.println("Regex: " + gds.get(j).getRegex());
+//				System.out.println("Regex Value: " + gds.get(j).getRegexValue());
+//				System.out.println("Group Split: " + gds.get(j).getSplit());
+//				System.out.print("Group Head: " );
+//				printList(gds.get(j).getHeadDes());
+//			}
 //			System.out.println("Chart Deses");
 //			for(int j=0; j < cds.size(); j++){
 //				System.out.println("ChartName: " + cds.get(j).getChartName());
@@ -243,16 +240,16 @@ public class XRunner extends Runner {
 //				System.out.println("GroupColName: " );
 //				System.out.println("AggregateName: " + cds.get(j).getAggregateName());
 //				printList(cds.get(j).getColName());
-//			}
-		}
-	}
-	
-	public void printList(List<String> list){
-		for(int i=0; i<list.size(); i++){
-			System.out.print(list.get(i) + " ");
-		}
-		System.out.println();
-	}
+////			}
+//		}
+//	}
+//	
+//	public void printList(List<String> list){
+//		for(int i=0; i<list.size(); i++){
+//			System.out.print(list.get(i) + " ");
+//		}
+//		System.out.println();
+//	}
 	
 	@Override
 	public void run() throws Exception {

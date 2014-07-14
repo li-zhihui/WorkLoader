@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TARGET=("sr479" "sr480" "sr481" "sr482")
+TARGET=("sr160" "sr161" "sr197" "sr205")
 
 for worker in ${TARGET[@]}
 do

@@ -39,7 +39,7 @@ public class XChartPreprocessor{
 		System.out.println(csvFolder + currentSlave+"_" + des.getCommandName()+".dat");
 		FileReader fr = new FileReader(csvFolder + currentSlave+"_" + des.getCommandName()+".dat");
 		BufferedReader br = new BufferedReader(fr);
-		String line;
+		String line=null;
 		int i = 0; 
 		while(i < des.getStartSkip()){
 			br.readLine();
@@ -47,22 +47,42 @@ public class XChartPreprocessor{
 		}
 		long time = (startTime - (Long)WorkloadContext.get(Constants.WORKLOAD_RUNTIME))/1000;
 		System.out.println("JOB START AT: " + startTime);
-		//discard records preceding the start of job
+		//FIXME add timestamp to get more accurate results
 		if(time > 0){
 			long num = time / Integer.parseInt((WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)));
-			remainder = time%Integer.parseInt((WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY)));
-			long count = 0;
-			for(int n=0;n<des.getGroupDes().size();n++)
-				count +=des.getGroupDes().get(n).getCount();
-			System.out.println("Discard "+ num +"records\t"+count*num + "lines\t" + remainder);
+			long freq  = Long.parseLong(WorkloadConf.get(Constants.WORKLOAD_RUNNER_FREQUENCY));
+			if(time % freq !=0){
+				num += 1;
+				remainder = freq - time%freq;
+			}
+			else 
+				remainder = 0;
+			System.out.println("Time offset: "+time + "\tDiscard "+ num  + "lines\t" + "Remainder: "+remainder);
 			i = 0;
-			while( i < count*num){
-				br.readLine();
-				i++;
-			}	
+			line = br.readLine();
+			while(i < num){
+				if(des.getGroupDes().get(0).getGroupName().equals("null")){
+					i++;
+					if(i == num)
+						break;
+					line = br.readLine();
+				}
+				else if(line.equals("")){
+						for(int m=0; m<des.getGroupDes().size(); m++){
+							while(true){
+								//System.out.println("HAHA: "+ line);
+								line = br.readLine();
+								if(line.equals(""))
+									break;
+							}
+						}
+						i++;
+				}	
+			}
 		}
-		line = br.readLine();
-		//System.out.println("FIRST LINE: " + line);
+		
+		if(line == null || (line!=null && !line.equals("")))
+			line = br.readLine();
 		while(true){
 			if(line.equals("")){
 				Map<String,List<List<String>>> map = new HashMap<String,List<List<String>>>();
@@ -77,8 +97,10 @@ public class XChartPreprocessor{
 				  		break;
 				  	}
 				  	if(checkRegex(line,regex,regexValue)){
+//				  			System.out.println("HEHE"+line);
 				  			line = br.readLine();
 				  			while(line != null && !line.equals("") ){
+				  				//System.out.println("mama" + line);
 				  				List<String> record = Util.getList(line, split);
 				  				line = br.readLine();
 				  				groupTable.add(record);
@@ -105,6 +127,7 @@ public class XChartPreprocessor{
 			}
 			else{
 				br.close();
+				System.out.println("Line: "+ line);
 				throw new Exception("Cannot process the file format");
 			}
 			if(line == null){

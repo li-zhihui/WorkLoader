@@ -1,5 +1,9 @@
 package workload.spark.backup;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import workload.spark.Constants;
 import workload.spark.WorkloadConf;
 
@@ -15,10 +19,8 @@ public class Backup {
 				+ System.currentTimeMillis() + "/";
 		String backupPath = WorkloadConf.get(Constants.WORKLOAD_BACKUP_PATH)
 				+ backupName;
-		String webPath = "../workload.web/src/main/webapp/LogPic";
 		run.exec("mkdir " + backupPath).waitFor();
-		run.exec("mkdir" + webPath).waitFor();
-		String cmdS = "/bin/mv "
+		String cmdS = "/bin/cp "
 				+ WorkloadConf.get(Constants.WORKLOAD_OUTPUT_PATH) + "*.* "
 				+ backupPath ;
 		String[] cmd = { "/bin/sh", "-c", cmdS };
@@ -28,12 +30,26 @@ public class Backup {
 			throw new Exception("backup failed.");
 		}
 		
-		cmdS = "bin/mv "+ WorkloadConf.get(Constants.WORKLOAD_OUTPUT_PATH)+"*.* "+webPath ;
-		System.out.println(cmdS);
-		String[] cmdW = { "/bin/sh", "-c", cmdS };
-		p = run.exec(cmdW);
+		String webPath = System.getProperty("user.dir") +  "/workload.web/src/main/webapp/LogPic";
+		Runtime.getRuntime().exec("mkdir " + webPath).waitFor();
+		String cmdT = "/bin/mv "
+				+ WorkloadConf.get(Constants.WORKLOAD_OUTPUT_PATH) + "*.* "
+				+ webPath ;
+		System.out.println(cmdT);
+		String[] cmdW = { "/bin/sh", "-c", cmdT };
+		p = Runtime.getRuntime().exec(cmdW);
+		//clean the buffered area to avoid deadlock
+		BufferedInputStream inErr = new BufferedInputStream(p.getErrorStream());
+		BufferedReader br = new BufferedReader(new InputStreamReader(inErr));
+		BufferedInputStream inInput = new BufferedInputStream(p.getInputStream());
+		BufferedReader br1 = new BufferedReader(new InputStreamReader(inInput));
+		String line = null;
+		while((line = br.readLine())!= null)
+		while((line = br1.readLine())!= null)
 		if (p.waitFor() != 0) {
 			throw new Exception("web copy failed.");
 		}
 	}
+	
+	
 }

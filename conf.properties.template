@@ -1,12 +1,12 @@
-spark.home=/home/liyezhan/work/spark/spark-0.9.0-incubating-bin-hadoop1/
+spark.home=/home/qyzhu/spark/spark-1.0.0-bin-hadoop1/
 workload.path.root=/
 
 
-workload.nweight.path=/home/liyezhan/work/workload/youku/nweight/
+workload.nweight.path=/home/qyzhu/nweight/
 workload.nweight.run=run.sh
 
-workload.billboard.path=/home/liyezhan/work/workload/billboard/
-workload.billboard.run=run.sh
+#workload.billboard.path=/home/liyezhan/work/workload/billboard/
+#workload.billboard.run=run.sh
 
 workload.output.path=/tmp/workload/
 workload.backup.path=/tmp/
@@ -15,13 +15,13 @@ workload.step.runner=XRunner
 workload.step.parser=XParser
 workload.step.loader=XLoader
 workload.step.cleaner=XCleaner
-workload.step.chart=emptyChart
-workload.execute.backup=false
+workload.step.chart=XChart
+workload.execute.backup=true
 workload.step.report=false
 
 workload.log=true
 
-workload.runner.command=dstat
+workload.runner.command=dstat,sar,iostat,vmstat
 #second in unit
 workload.runner.sleeptime=40
 workload.runner.frequency=2
